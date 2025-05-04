@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh toán tiền cọc - Hệ thống quản lý nhà trọ</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* Header */
+        header {
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+
+        .logo img {
+            height: 40px;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-menu li {
+            margin-left: 25px;
+        }
+
+        .nav-menu li a {
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-menu li a:hover {
+            color: #3498db;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-menu a {
+            margin-left: 15px;
+            color: #333;
+            text-decoration: none;
+        }
+
+        .user-menu .btn {
+            background-color: #3498db;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .user-menu .btn:hover {
+            background-color: #2980b9;
+        }
+
+        /* Payment Container */
+        .payment-container {
+            max-width: 1000px;
+            margin: 40px auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        /* Payment Instructions */
+        .payment-instructions {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        .payment-title {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .payment-subtitle {
+            font-size: 18px;
+            color: #3498db;
+            margin-bottom: 15px;
+            margin-top: 25px;
+        }
+
+        .instructions-text {
+            margin-bottom: 20px;
+            color: #555;
+        }
+
+        .step-list {
+            margin-bottom: 25px;
+        }
+
+        .step-item {
+            display: flex;
+            margin-bottom: 15px;
+        }
+
+        .step-number {
+            width: 28px;
+            height: 28px;
+            background-color: #3498db;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 15px;
+            flex-shrink: 0;
+            font-weight: bold;
+        }
+
+        .step-content {
+            color: #555;
+        }
+
+        .step-content strong {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .bank-info {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .bank-info-item {
+            display: flex;
+            margin-bottom: 12px;
+        }
+
+        .bank-info-label {
+            width: 150px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .bank-info-value {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .copy-btn {
+            background-color: #f1f1f1;
+            border: none;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 10px;
+            cursor: pointer;
+            font-size: 12px;
+            color: #555;
+            transition: all 0.3s;
+        }
+
+        .copy-btn:hover {
+            background-color: #e0e0e0;
+        }
+
+        .payment-note {
+            background-color: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-top: 25px;
+            color: #5d4037;
+        }
+
+        .payment-note h4 {
+            margin-bottom: 10px;
+            color: #e65100;
+        }
+
+        /* QR Code Section */
+        .qr-code-section {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            text-align: center;
+        }
+
+        .qr-title {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .qr-subtitle {
+            color: #555;
+            margin-bottom: 25px;
+        }
+
+        .qr-image {
+            width: 250px;
+            height: 250px;
+            margin: 0 auto 25px;
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+        }
+
+        .qr-image img {
+            width: 100%;
+            height: 100%;
+        }
+
+        .payment-total {
+            font-size: 24px;
+            font-weight: bold;
+            color: #e74c3c;
+            margin: 20px 0;
+        }
+
+        .payment-reference {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .reference-label {
+            font-weight: 500;
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+        .reference-value {
+            font-weight: bold;
+            font-size: 18px;
+            color: #2c3e50;
+        }
+
+        .payment-help {
+            margin-top: 30px;
+            color: #555;
+        }
+
+        .help-phone {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .help-phone i {
+            color: #3498db;
+            margin-right: 5px;
+        }
+
+        .confirm-section {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border-radius: 4px;
+            font-weight: 500;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-success {
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+        }
+
+        .btn-success:hover {
+            background-color: #27ae60;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: #555;
+            border: 1px solid #ddd;
+        }
+
+        .btn-outline:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* Booking Summary */
+        .booking-summary {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        .summary-title {
+            font-size: 20px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .summary-content {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .summary-item {
+            margin-bottom: 15px;
+        }
+
+        .summary-label {
+            font-weight: 500;
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+        .summary-value {
+            color: #333;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #2c3e50;
+            color: white;
+            padding: 40px 0 20px;
+            margin-top: 60px;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .footer-column {
+            flex: 1;
+            min-width: 200px;
+            margin-bottom: 20px;
+        }
+
+        .footer-column h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-column h3:after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 40px;
+            height: 2px;
+            background-color: #3498db;
+        }
+
+        .footer-column ul {
+            list-style: none;
+        }
+
+        .footer-column ul li {
+            margin-bottom: 8px;
+        }
+
+        .footer-column ul li a {
+            color: #bbb;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-column ul li a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 20px;
+            margin-top: 20px;
+            border-top: 1px solid #3a5168;
+            color: #bbb;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .payment-container {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .alert {
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="container header-container">
+        <div class="logo">
+            <a th:href="@{/}">
+                <img src="https://via.placeholder.com/160x40" alt="Logo Nhà trọ">
+            </a>
+        </div>
+
+        <ul class="nav-menu">
+            <li><a th:href="@{/}">Trang chủ</a></li>
+            <li><a th:href="@{/rooms}">Phòng trọ</a></li>
+            <li><a th:href="@{/about}">Giới thiệu</a></li>
+            <li><a th:href="@{/contact}">Liên hệ</a></li>
+        </ul>
+
+        <div class="user-menu">
+            <!-- Hiển thị nút Đặt phòng và Đăng nhập khi chưa đăng nhập -->
+            <div th:if="${session.user == null}">
+                <a th:href="@{/bookings}"><i class="far fa-clipboard"></i> Đặt phòng của tôi</a>
+                <a th:href="@{/login}" class="btn">Đăng nhập</a>
+            </div>
+
+            <!-- Hiển thị thông tin người dùng khi đã đăng nhập -->
+            <div th:if="${session.user != null}">
+                <a th:href="@{/user/bookings}"><i class="far fa-clipboard"></i> Đặt phòng của tôi</a>
+                <a th:href="@{/user/profile}"><i class="far fa-user"></i> <span th:text="${session.user.username}">Nguyễn Văn A</span></a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="container">
+    <!-- Thông báo lỗi và tin nhắn thành công -->
+    <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+    <div th:if="${message}" class="alert alert-success" role="alert" th:text="${message}"></div>
+
+    <div class="payment-container">
+        <!-- Payment Instructions -->
+        <div class="payment-instructions">
+            <h1 class="payment-title">Thanh toán tiền cọc</h1>
+
+            <p class="instructions-text">
+                Để hoàn tất đặt phòng của bạn, vui lòng thanh toán tiền cọc là <strong th:text="${#numbers.formatDecimal(booking.roomId.price, 0, 'COMMA', 0, 'POINT') + 'đ'}">4.500.000đ</strong> bằng một trong các phương thức sau:
+            </p>
+
+            <h3 class="payment-subtitle">Chuyển khoản ngân hàng</h3>
+
+            <div class="bank-info">
+                <div class="bank-info-item">
+                    <div class="bank-info-label">Ngân hàng:</div>
+                    <div class="bank-info-value">Vietcombank</div>
+                </div>
+                <div class="bank-info-item">
+                    <div class="bank-info-label">Số tài khoản:</div>
+                    <div class="bank-info-value">
+                        1023456789
+                        <button class="copy-btn" onclick="copyToClipboard('1023456789')">Sao chép</button>
+                    </div>
+                </div>
+                <div class="bank-info-item">
+                    <div class="bank-info-label">Chủ tài khoản:</div>
+                    <div class="bank-info-value">CÔNG TY TNHH NHÀ TRỌ ABC</div>
+                </div>
+                <div class="bank-info-item">
+                    <div class="bank-info-label">Số tiền:</div>
+                    <div class="bank-info-value">
+                        <span th:text="${#numbers.formatDecimal(booking.roomId.price, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}">4,500,000 VNĐ</span>
+                        <button class="copy-btn" th:onclick="'copyToClipboard(\'' + ${booking.roomId.price} + '\')'">Sao chép</button>
+                    </div>
+                </div>
+                <div class="bank-info-item">
+                    <div class="bank-info-label">Nội dung CK:</div>
+                    <div class="bank-info-value">
+                        <span th:text="${'BK-' + booking.id + ' ' + booking.customerId.fullName}">BK-20250424-7629 NGUYEN VAN A</span>
+                        <button class="copy-btn" th:onclick="'copyToClipboard(\'BK-' + ${booking.id} + ' ' + ${booking.customerId.fullName} + '\')'">Sao chép</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step-list">
+                <div class="step-item">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        Mở ứng dụng ngân hàng hoặc Internet Banking của bạn
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        Chuyển khoản đến số tài khoản <strong>1023456789</strong> - <strong>Vietcombank</strong>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        Nhập số tiền <strong th:text="${#numbers.formatDecimal(booking.roomId.price, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}">4,500,000 VNĐ</strong>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        Trong phần nội dung chuyển khoản, ghi rõ: <strong th:text="${'BK-' + booking.id + ' ' + booking.customerId.fullName}">BK-20250424-7629 NGUYEN VAN A</strong>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        Sau khi thanh toán thành công, nhấn "Đã thanh toán" bên dưới
+                    </div>
+                </div>
+            </div>
+
+            <div class="payment-note">
+                <h4>Lưu ý quan trọng:</h4>
+                <p>Vui lòng nhập đúng nội dung chuyển khoản để chúng tôi xác nhận thanh toán của bạn nhanh chóng.</p>
+                <p>Tiền cọc sẽ được trừ vào tổng số tiền thuê phòng của bạn.</p>
+            </div>
+
+            <div class="confirm-section">
+                <div class="action-buttons">
+                    <form th:action="@{'/payment/confirm/' + ${booking.id}}" method="post">
+                        <button type="submit" class="btn btn-success">Đã thanh toán</button>
+                    </form>
+                    <a th:href="@{'/booking/cancel/' + ${booking.id}}" class="btn btn-outline">Hủy đặt phòng</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- QR Code Section -->
+        <div class="qr-code-section">
+            <h2 class="qr-title">Quét mã QR để thanh toán</h2>
+            <p class="qr-subtitle">Sử dụng ứng dụng ngân hàng để quét mã QR</p>
+
+            <div class="qr-image">
+                <img src="https://via.placeholder.com/250x250" alt="Mã QR thanh toán">
+            </div>
+
+            <div class="payment-total" th:text="${#numbers.formatDecimal(booking.roomId.price, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}">4.500.000 VNĐ</div>
+
+            <div class="payment-reference">
+                <div class="reference-label">Mã đặt phòng:</div>
+                <div class="reference-value" th:text="${'BK-' + booking.id}">BK-20250424-7629</div>
+            </div>
+
+            <div class="payment-help">
+                Cần trợ giúp? Liên hệ hỗ trợ:
+                <div class="help-phone">
+                    <i class="fas fa-phone-alt"></i> 0123 456 789
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Summary -->
+    <div class="booking-summary">
+        <h3 class="summary-title">Tóm tắt đơn đặt phòng</h3>
+
+        <div class="summary-content">
+            <div>
+                <div class="summary-item">
+                    <div class="summary-label">Tên phòng:</div>
+                    <div class="summary-value" th:text="${booking.roomId.roomType != null ? booking.roomId.roomType.name : 'Phòng'} + ' - ' + ${booking.roomId.roomNumber}">Phòng Studio cao cấp gần Bến Thành</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Địa chỉ:</div>
+                    <div class="summary-value" th:text="${booking.roomId.address != null ? booking.roomId.address : '123 Nguyễn Huệ, Quận 1, TP.HCM'}">123 Nguyễn Huệ, Quận 1, TP.HCM</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Ngày nhận phòng:</div>
+                    <div class="summary-value" th:text="${#dates.format(booking.startDate, 'dd/MM/yyyy')}">01/05/2025</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Thời hạn thuê:</div>
+                    <div class="summary-value" th:text="${booking.duration + ' tháng'}">6 tháng</div>
+                </div>
+            </div>
+
+            <div>
+                <div class="summary-item">
+                    <div class="summary-label">Họ và tên:</div>
+                    <div class="summary-value" th:text="${booking.customerId.fullName}">Nguyễn Văn A</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Số điện thoại:</div>
+                    <div class="summary-value" th:text="${booking.customerId.phoneNumber}">0912345678</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Giá thuê:</div>
+                    <div class="summary-value" th:text="${#numbers.formatDecimal(booking.roomId.price, 0, 'COMMA', 0, 'POINT') + 'đ/tháng'}">4.500.000đ/tháng</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Số người ở:</div>
+                    <div class="summary-value" th:text="${booking.numTenants + ' người'}">2 người</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-column">
+                <h3>Về chúng tôi</h3>
+                <ul>
+                    <li><a th:href="@{/about}">Giới thiệu</a></li>
+                    <li><a th:href="@{/rooms}">Phòng trọ</a></li>
+                    <li><a th:href="@{/blogs}">Tin tức</a></li>
+                    <li><a th:href="@{/contact}">Liên hệ</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-column">
+                <h3>Dịch vụ</h3>
+                <ul>
+                    <li><a th:href="@{/rooms}">Tìm phòng trọ</a></li>
+                    <li><a th:href="@{/booking}">Đặt phòng</a></li>
+                    <li><a th:href="@{/payment}">Thanh toán</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-column">
+                <h3>Hỗ trợ</h3>
+                <ul>
+                    <li><a th:href="@{/faq}">FAQ</a></li>
+                    <li><a th:href="@{/terms}">Điều khoản sử dụng</a></li>
+                    <li><a th:href="@{/privacy}">Chính sách bảo mật</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-column">
+                <h3>Liên hệ</h3>
+                <ul>
+                    <li><i class="fas fa-map-marker-alt"></i> 123 Nguyễn Huệ, Q.1, TP.HCM</li>
+                    <li><i class="fas fa-phone"></i> 0123 456 789</li>
+                    <li><i class="fas fa-envelope"></i> info@nhatroxyz.com</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2025 Hệ thống Quản lý nhà trọ | All Rights Reserved</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(function() {
+            alert('Đã sao chép: ' + text);
+        }, function() {
+            alert('Không thể sao chép văn bản');
+        });
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang chủ - Hệ thống quản lý nhà trọ</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* Header */
+        header {
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+
+        .logo img {
+            height: 40px;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-menu li {
+            margin-left: 25px;
+        }
+
+        .nav-menu li a {
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-menu li a:hover {
+            color: #3498db;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-menu a {
+            margin-left: 15px;
+            color: #333;
+            text-decoration: none;
+        }
+
+        .user-menu .btn {
+            background-color: #3498db;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .user-menu .btn:hover {
+            background-color: #2980b9;
+        }
+
+        /* Hero Banner */
+        .hero {
+            height: 500px;
+            background-image: url("https://media.newhomeinc.com/348/2023/2/24/Morehead-Low-Country-1.jpg?width=1920&ois=5dafa51&fit=bounds&height=1280");
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.3);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            color: white;
+            max-width: 600px;
+            padding: 0 20px;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+        }
+
+        /* Search Box */
+        .search-box {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-top: -50px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .search-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .search-row {
+            display: flex;
+            width: 100%;
+            gap: 15px;
+        }
+
+        .form-group {
+            flex: 1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        .search-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-left: auto;
+            margin-top: 15px;
+        }
+
+        .search-btn:hover {
+            background-color: #2980b9;
+        }
+
+        /* Featured Rooms */
+        .section {
+            padding: 60px 0;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 2rem;
+            color: #2c3e50;
+        }
+
+        .rooms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .room-card {
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .room-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .room-image {
+            height: 200px;
+            overflow: hidden;
+        }
+
+        .room-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+
+        .room-card:hover .room-image img {
+            transform: scale(1.05);
+        }
+
+        .room-info {
+            padding: 20px;
+        }
+
+        .room-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .room-price {
+            color: #3498db;
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .room-meta {
+            display: flex;
+            justify-content: space-between;
+            color: #777;
+            margin-bottom: 15px;
+        }
+
+        .room-meta span {
+            display: flex;
+            align-items: center;
+        }
+
+        .room-meta i {
+            margin-right: 5px;
+        }
+
+        .room-address {
+            color: #777;
+            margin-bottom: 15px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .room-facilities {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .facility-tag {
+            background-color: #f1f1f1;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            color: #555;
+        }
+
+        .room-status {
+            display: inline-block;
+            padding: 5px 10px;
+            background-color: #2ecc71;
+            color: white;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            margin-bottom: 15px;
+        }
+
+        .room-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #3498db;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .room-btn:hover {
+            background-color: #2980b9;
+        }
+
+        /* Promotions */
+        .promotions {
+            background-color: #f9f9f9;
+        }
+
+        .promo-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .promo-card {
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .promo-image {
+            height: 150px;
+        }
+
+        .promo-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .promo-content {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .promo-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .promo-desc {
+            color: #777;
+            margin-bottom: 20px;
+        }
+
+        .promo-btn {
+            margin-top: auto;
+            display: inline-block;
+            padding: 8px 15px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            align-self: flex-start;
+            transition: background-color 0.3s;
+        }
+
+        .promo-btn:hover {
+            background-color: #2980b9;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #2c3e50;
+            color: white;
+            padding: 60px 0 30px;
+        }
+
+        .footer-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .footer-col h3 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-col h3::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 50px;
+            height: 2px;
+            background-color: #3498db;
+        }
+
+        .footer-col ul {
+            list-style: none;
+        }
+
+        .footer-col ul li {
+            margin-bottom: 10px;
+        }
+
+        .footer-col ul li a {
+            color: #bbb;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-col ul li a:hover {
+            color: white;
+        }
+
+        .footer-contact p {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            color: #bbb;
+        }
+
+        .footer-contact i {
+            margin-right: 10px;
+            color: #3498db;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background-color: #34495e;
+            color: white;
+            border-radius: 50%;
+            transition: background-color 0.3s;
+        }
+
+        .social-links a:hover {
+            background-color: #3498db;
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid #34495e;
+            color: #bbb;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="container header-container">
+        <div class="logo">
+            <a th:href="@{/}">
+                <img src="https://via.placeholder.com/160x40" alt="Logo Nhà trọ">
+            </a>
+        </div>
+
+        <ul class="nav-menu">
+            <li><a th:href="@{/}">Trang chủ</a></li>
+            <li><a th:href="@{/rooms}">Phòng trọ</a></li>
+            <li><a th:href="@{/about}">Giới thiệu</a></li>
+            <li><a th:href="@{/contact}">Liên hệ</a></li>
+        </ul>
+
+        <div class="user-menu">
+            <!-- Hiển thị nút Đặt phòng và Đăng nhập khi chưa đăng nhập -->
+            <div th:if="${session.user == null}">
+                <a th:href="@{/bookings}"><i class="far fa-clipboard"></i> Đặt phòng của tôi</a>
+                <a th:href="@{/login}" class="btn">Đăng nhập</a>
+            </div>
+
+            <!-- Hiển thị thông tin người dùng khi đã đăng nhập -->
+            <div th:if="${session.user != null}">
+                <a th:href="@{/bookings}"><i class="far fa-clipboard"></i> Đặt phòng của tôi</a>
+                <a th:href="@{/user/profile}"><i class="far fa-user-circle"></i> <span th:text="${session.user.username}"></span></a>
+                <a th:href="@{/logout}" class="btn">Đăng xuất</a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<section class="hero">
+    <div class="hero-content">
+        <h1>Tìm phòng trọ phù hợp với bạn</h1>
+        <p>Hàng trăm phòng trọ chất lượng đang chờ bạn khám phá với đầy đủ tiện nghi và giá cả hợp lý</p>
+    </div>
+</section>
+
+<div class="container">
+    <div class="search-box">
+        <form class="search-form" th:action="@{/rooms}" method="get">
+            <div class="search-row">
+                <div class="form-group">
+                    <label for="location">Khu vực</label>
+                    <select id="location" name="district">
+                        <option value="">Chọn khu vực</option>
+                        <option value="1">Quận 1</option>
+                        <option value="2">Quận 2</option>
+                        <option value="3">Quận 3</option>
+                        <option value="4">Quận 4</option>
+                        <option value="5">Quận 5</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="price">Mức giá</label>
+                    <select id="price" name="priceRange">
+                        <option value="">Chọn mức giá</option>
+                        <option value="0-2000000">Dưới 2 triệu</option>
+                        <option value="2000000-3000000">2 - 3 triệu</option>
+                        <option value="3000000-5000000">3 - 5 triệu</option>
+                        <option value="5000000-10000000">5 - 10 triệu</option>
+                        <option value="10000000-100000000">Trên 10 triệu</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="room-type">Loại phòng</label>
+                    <select id="room-type" name="roomType">
+                        <option value="">Chọn loại phòng</option>
+                        <option value="studio">Phòng studio</option>
+                        <option value="1bed">Phòng 1 ngủ</option>
+                        <option value="2beds">Phòng 2 ngủ</option>
+                        <option value="mini">Phòng mini</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" class="search-btn">
+                <i class="fas fa-search"></i> Tìm kiếm
+            </button>
+        </form>
+    </div>
+</div>
+
+<section class="section featured-rooms">
+    <div class="container">
+        <h2 class="section-title">Phòng trọ nổi bật</h2>
+
+        <div class="rooms-grid">
+            <!-- Hiển thị phòng từ database -->
+            <div class="room-card" th:each="room : ${featuredRooms}" th:if="${featuredRooms != null && !featuredRooms.isEmpty()}">
+                <div class="room-image">
+                    <img th:src="${room.roomImage != null ? room.roomImage : 'https://via.placeholder.com/400x300'}" alt="Phòng trọ">
+                </div>
+                <div class="room-info">
+                    <h3 class="room-title" th:text="${room.roomType != null ? room.roomType.name : 'Phòng Studio'} + ' - ' + ${room.roomNumber}"></h3>
+                    <div class="room-price" th:text="${#numbers.formatDecimal(room.price, 0, 'COMMA', 0, 'POINT') + ' đ/tháng'}"></div>
+                    <div class="room-meta">
+                        <span><i class="fas fa-vector-square"></i> <span th:text="${room.area + 'm²'}"></span></span>
+                        <span><i class="fas fa-users"></i> 2 người</span>
+                    </div>
+                    <div class="room-address">
+                        <i class="fas fa-map-marker-alt"></i> <span th:text="${room.address != null ? room.address : 'Quận 1, TP. Hồ Chí Minh'}"></span>
+                    </div>
+                    <div class="room-facilities">
+                        <span class="facility-tag" th:if="${room.hasAC == true}">Điều hòa</span>
+                        <span class="facility-tag" th:if="${room.hasFurniture == true}">Nội thất</span>
+                        <span class="facility-tag" th:if="${room.hasWifi == true}">Wifi</span>
+                        <span class="facility-tag" th:if="${room.hasParking == true}">Chỗ để xe</span>
+                    </div>
+                    <span class="room-status">Còn trống</span>
+                    <a th:href="@{'/rooms/' + ${room.id}}" class="room-btn">Xem chi tiết</a>
+                </div>
+            </div>
+
+            <!-- Phòng mẫu nếu không có dữ liệu -->
+            <div class="room-card" th:if="${featuredRooms == null || featuredRooms.isEmpty()}">
+                <div class="room-image">
+                    <img src="https://www.thespruce.com/thmb/iMt63n8NGCojUETr6-T8oj-5-ns=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/PAinteriors-7-cafe9c2bd6be4823b9345e591e4f367f.jpg" alt="Phòng trọ">
+                </div>
+                <div class="room-info">
+                    <h3 class="room-title">Phòng Studio cao cấp</h3>
+                    <div class="room-price">3.500.000 đ/tháng</div>
+                    <div class="room-meta">
+                        <span><i class="fas fa-vector-square"></i> 25m²</span>
+                        <span><i class="fas fa-users"></i> 2 người</span>
+                    </div>
+                    <div class="room-address">
+                        <i class="fas fa-map-marker-alt"></i> Quận 1, TP. Hồ Chí Minh
+                    </div>
+                    <div class="room-facilities">
+                        <span class="facility-tag">Điều hòa</span>
+                        <span class="facility-tag">Nội thất</span>
+                    </div>
+                    <span class="room-status">Còn trống</span>
+                    <a href="#" class="room-btn">Xem chi tiết</a>
+                </div>
+            </div>
+
+            <!-- Phòng mẫu nếu không có dữ liệu -->
+            <div class="room-card" th:if="${featuredRooms == null || featuredRooms.isEmpty()}">
+                <div class="room-image">
+                    <img src="https://www.decorpot.com/images/blogimage1361284108interior-designs-for-master-bedroom.jpg" alt="Phòng trọ">
+                </div>
+                <div class="room-info">
+                    <h3 class="room-title">Phòng trọ tiêu chuẩn</h3>
+                    <div class="room-price">2.200.000 đ/tháng</div>
+                    <div class="room-meta">
+                        <span><i class="fas fa-vector-square"></i> 18m²</span>
+                        <span><i class="fas fa-users"></i> 1 người</span>
+                    </div>
+                    <div class="room-address">
+                        <i class="fas fa-map-marker-alt"></i> Quận Bình Thạnh, TP. HCM
+                    </div>
+                    <div class="room-facilities">
+                        <span class="facility-tag">Máy giặt</span>
+                        <span class="facility-tag">Wifi</span>
+                    </div>
+                    <span class="room-status">Còn trống</span>
+                    <a href="#" class="room-btn">Xem chi tiết</a>
+                </div>
+            </div>
+
+            <!-- Phòng mẫu nếu không có dữ liệu -->
+            <div class="room-card" th:if="${featuredRooms == null || featuredRooms.isEmpty()}">
+                <div class="room-image">
+                    <img src="https://www.jaypeehotels.com/blog/wp-content/uploads/2024/09/Blog-6-scaled.jpg" alt="Phòng trọ">
+                </div>
+                <div class="room-info">
+                    <h3 class="room-title">Phòng 1 ngủ đầy đủ nội thất</h3>
+                    <div class="room-price">4.500.000 đ/tháng</div>
+                    <div class="room-meta">
+                        <span><i class="fas fa-vector-square"></i> 32m²</span>
+                        <span><i class="fas fa-users"></i> 2 người</span>
+                    </div>
+                    <div class="room-address">
+                        <i class="fas fa-map-marker-alt"></i> Quận 7, TP. Hồ Chí Minh
+                    </div>
+                    <div class="room-facilities">
+                        <span class="facility-tag">Tủ lạnh</span>
+                        <span class="facility-tag">Điều hòa</span>
+                    </div>
+                    <span class="room-status">Còn trống</span>
+                    <a href="#" class="room-btn">Xem chi tiết</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center" style="margin-top: 30px;">
+            <a th:href="@{/rooms}" class="search-btn" style="display: inline-block;">
+                Xem tất cả phòng trọ <i class="fas fa-arrow-right ml-2"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="section promotions">
+    <div class="container">
+        <h2 class="section-title">Ưu đãi đặc biệt</h2>
+
+        <div class="promo-container">
+            <!-- Promo 1 -->
+            <div class="promo-card">
+                <div class="promo-image">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS-G_CdMu2SCO-sRSf3ozLRZGFfCT85drzoEw&s" alt="Ưu đãi">
+                </div>
+                <div class="promo-content">
+                    <h3 class="promo-title">Giảm 50% tiền cọc</h3>
+                    <p class="promo-desc">Áp dụng cho tất cả các phòng khi đặt online trong tháng 5/2025</p>
+                    <a th:href="@{/promotions/1}" class="promo-btn">Xem chi tiết</a>
+                </div>
+            </div>
+
+            <!-- Promo 2 -->
+            <div class="promo-card">
+                <div class="promo-image">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS-G_CdMu2SCO-sRSf3ozLRZGFfCT85drzoEw&s" alt="Ưu đãi">
+                </div>
+                <div class="promo-content">
+                    <h3 class="promo-title">Miễn phí 1 tháng điện nước</h3>
+                    <p class="promo-desc">Khi thuê phòng từ 6 tháng trở lên</p>
+                    <a th:href="@{/promotions/2}" class="promo-btn">Xem chi tiết</a>
+                </div>
+            </div>
+
+            <!-- Promo 3 -->
+            <div class="promo-card">
+                <div class="promo-image">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS-G_CdMu2SCO-sRSf3ozLRZGFfCT85drzoEw&s" alt="Ưu đãi">
+                </div>
+                <div class="promo-content">
+                    <h3 class="promo-title">Tặng voucher nội thất</h3>
+                    <p class="promo-desc">Trị giá 500.000đ khi thuê phòng studio</p>
+                    <a th:href="@{/promotions/3}" class="promo-btn">Xem chi tiết</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <div class="container">
+        <div class="footer-container">
+            <div class="footer-col">
+                <h3>Về chúng tôi</h3>
+                <ul>
+                    <li><a th:href="@{/about}">Giới thiệu</a></li>
+                    <li><a th:href="@{/rooms}">Phòng trọ</a></li>
+                    <li><a th:href="@{/blogs}">Tin tức</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h3>Dịch vụ</h3>
+                <ul>
+                    <li><a th:href="@{/services}">Đặt phòng</a></li>
+                    <li><a th:href="@{/services/payment}">Thanh toán</a></li>
+                    <li><a th:href="@{/services/support}">Hỗ trợ</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h3>Liên hệ</h3>
+                <div class="footer-contact">
+                    <p><i class="fas fa-map-marker-alt"></i> 123 Đường ABC, Quận 1, TP. HCM</p>
+                    <p><i class="fas fa-phone"></i> 0123.456.789</p>
+                    <p><i class="fas fa-envelope"></i> info@hostel.com</p>
+
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="copyright">
+            <p>&copy; 2025 Hệ thống quản lý nhà trọ. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+</body>
+</html>

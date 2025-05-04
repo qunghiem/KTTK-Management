@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đặt phòng - Hệ thống quản lý nhà trọ</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* Header */
+        header {
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+
+        .logo img {
+            height: 40px;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-menu li {
+            margin-left: 25px;
+        }
+
+        .nav-menu li a {
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-menu li a:hover {
+            color: #3498db;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-menu a {
+            margin-left: 15px;
+            color: #333;
+            text-decoration: none;
+        }
+
+        .user-menu .btn {
+            background-color: #3498db;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .user-menu .btn:hover {
+            background-color: #2980b9;
+        }
+
+        /* Booking Form */
+        .form-container {
+            max-width: 800px;
+            margin: 40px auto;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        .form-title {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .form-subtitle {
+            font-size: 18px;
+            color: #3498db;
+            margin-bottom: 15px;
+            margin-top: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 15px;
+            transition: border 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .form-col {
+            flex: 1;
+        }
+
+        .form-note {
+            font-size: 14px;
+            color: #777;
+            margin-top: 5px;
+        }
+
+        .checkbox-group {
+            margin-bottom: 15px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .checkbox-item input {
+            margin-right: 10px;
+        }
+
+        .form-actions {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border-radius: 4px;
+            font-weight: 500;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: #555;
+            border: 1px solid #ddd;
+        }
+
+        .btn-outline:hover {
+            background-color: #f5f5f5;
+        }
+
+        .room-info {
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 25px;
+        }
+
+        .room-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .room-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        .room-detail {
+            display: flex;
+            align-items: center;
+        }
+
+        .room-detail i {
+            margin-right: 5px;
+            color: #3498db;
+        }
+
+        .room-price {
+            font-size: 20px;
+            color: #e74c3c;
+            font-weight: 600;
+        }
+
+        .required {
+            color: #e74c3c;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #2c3e50;
+            color: white;
+            padding: 40px 0 20px;
+            margin-top: 60px;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .footer-column {
+            flex: 1;
+            min-width: 200px;
+            margin-bottom: 20px;
+        }
+
+        .footer-column h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-column h3:after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 40px;
+            height: 2px;
+            background-color: #3498db;
+        }
+
+        .footer-column ul {
+            list-style: none;
+        }
+
+        .footer-column ul li {
+            margin-bottom: 8px;
+        }
+
+        .footer-column ul li a {
+            color: #bbb;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-column ul li a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 20px;
+            margin-top: 20px;
+            border-top: 1px solid #3a5168;
+            color: #bbb;
+        }
+
+        .alert {
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="container header-container">
+        <div class="logo">
+            <a th:href="@{/}">
+                <img src="https://via.placeholder.com/160x40" alt="Logo Nhà trọ">
+            </a>
+        </div>
+
+        <ul class="nav-menu">
+            <li><a th:href="@{/}">Trang chủ</a></li>
+            <li><a th:href="@{/rooms}">Phòng trọ</a></li>
+            <li><a th:href="@{/about}">Giới thiệu</a></li>
+            <li><a th:href="@{/contact}">Liên hệ</a></li>
+        </ul>
+
+        <div class="user-menu">
+            <!-- Hiển thị nút Đặt phòng và Đăng nhập khi chưa đăng nhập -->
+            <div th:if="${session.user == null}">
+                <a th:href="@{/bookings}"><i class="far fa-clipboard"></i> Đặt phòng của tôi</a>
+                <a th:href="@{/login}" class="btn">Đăng nhập</a>
+            </div>
+
+            <!-- Hiển thị thông tin người dùng khi đã đăng nhập -->
+            <div th:if="${session.user != null}">
+                <a th:href="@{/user/bookings}"><i class="far fa-clipboard"></i> Đặt phòng của tôi</a>
+                <a th:href="@{/user/profile}"><i class="far fa-user"></i> <span th:text="${session.user.username}">Nguyễn Văn A</span></a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="container">
+    <div class="form-container">
+        <h1 class="form-title">Đặt phòng</h1>
+
+        <!-- Thông báo lỗi và tin nhắn thành công -->
+        <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+        <div th:if="${message}" class="alert alert-success" role="alert" th:text="${message}"></div>
+
+        <div class="room-info">
+            <h2 class="room-title" th:text="${room.roomType != null ? room.roomType.name : 'Phòng'} + ' - ' + ${room.roomNumber}">Phòng Studio cao cấp gần Bến Thành</h2>
+            <div class="room-details">
+                <span class="room-detail"><i class="fas fa-map-marker-alt"></i> <span th:text="${room.address != null ? room.address : '123 Nguyễn Huệ, Quận 1, TP.HCM'}">123 Nguyễn Huệ, Quận 1, TP.HCM</span></span>
+                <span class="room-detail"><i class="fas fa-vector-square"></i> <span th:text="${room.area + 'm²'}">28m²</span></span>
+                <span class="room-detail"><i class="fas fa-users"></i> Tối đa 2 người</span>
+            </div>
+            <div class="room-price" th:text="${#numbers.formatDecimal(room.price, 0, 'COMMA', 0, 'POINT') + ' đ/tháng'}">4.500.000 đ/tháng</div>
+        </div>
+
+        <form th:action="@{/booking/create}" method="post" th:object="${booking}">
+            <input type="hidden" th:field="*{roomId.id}">
+
+            <h3 class="form-subtitle">Thông tin cá nhân</h3>
+
+            <div class="form-row">
+                <div class="form-col">
+                    <div class="form-group">
+                        <label class="form-label">Họ và tên <span class="required">*</span></label>
+                        <input type="text" class="form-control" name="fullName" required th:value="${customer != null ? customer.fullName : ''}">
+                    </div>
+                </div>
+
+                <div class="form-col">
+                    <div class="form-group">
+                        <label class="form-label">Số điện thoại <span class="required">*</span></label>
+                        <input type="tel" class="form-control" name="phoneNumber" required pattern="[0-9]{10}" th:value="${customer != null ? customer.phoneNumber : ''}">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-col">
+                    <div class="form-group">
+                        <label class="form-label">Email <span class="required">*</span></label>
+                        <input type="email" class="form-control" name="email" required th:value="${customer != null ? customer.email : ''}">
+                    </div>
+                </div>
+
+                <div class="form-col">
+                    <div class="form-group">
+                        <label class="form-label">Số CMND/CCCD <span class="required">*</span></label>
+                        <input type="text" class="form-control" name="identityCard" required th:value="${customer != null ? customer.identityCard : ''}">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Địa chỉ</label>
+                <input type="text" class="form-control" name="address" th:value="${customer != null ? customer.address : ''}">
+            </div>
+
+            <h3 class="form-subtitle">Chi tiết đặt phòng</h3>
+
+            <div class="form-row">
+                <div class="form-col">
+                    <div class="form-group">
+                        <label class="form-label">Ngày nhận phòng <span class="required">*</span></label>
+                        <input type="date" class="form-control" th:field="*{startDate}" required>
+                    </div>
+                </div>
+
+                <div class="form-col">
+                    <div class="form-group">
+                        <label class="form-label">Thời hạn thuê <span class="required">*</span></label>
+                        <select class="form-control" name="duration" required>
+                            <option value="1">1 tháng</option>
+                            <option value="3">3 tháng</option>
+                            <option value="6" selected>6 tháng</option>
+                            <option value="12">12 tháng</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-col">
+                    <div class="form-group">
+                        <label class="form-label">Số người ở <span class="required">*</span></label>
+                        <select class="form-control" name="numTenants" required>
+                            <option value="1">1 người</option>
+                            <option value="2" selected>2 người</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-col">
+                    <div class="form-group">
+                        <label class="form-label">Phương tiện</label>
+                        <select class="form-control" name="vehicle">
+                            <option value="none" selected>Không có</option>
+                            <option value="motorbike">Xe máy</option>
+                            <option value="car">Ô tô</option>
+                            <option value="bicycle">Xe đạp</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Yêu cầu đặc biệt</label>
+                <textarea class="form-control" name="notes" rows="3" placeholder="Nếu bạn có yêu cầu đặc biệt, vui lòng cho chúng tôi biết"></textarea>
+            </div>
+
+            <div class="form-actions">
+                <a th:href="@{'/rooms/' + ${room.id}}" class="btn btn-outline">Quay lại</a>
+                <button type="submit" class="btn btn-primary">Tiếp tục</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<footer>
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-column">
+                <h3>Về chúng tôi</h3>
+                <ul>
+                    <li><a th:href="@{/about}">Giới thiệu</a></li>
+                    <li><a th:href="@{/rooms}">Phòng trọ</a></li>
+                    <li><a th:href="@{/blogs}">Tin tức</a></li>
+                    <li><a th:href="@{/contact}">Liên hệ</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-column">
+                <h3>Dịch vụ</h3>
+                <ul>
+                    <li><a th:href="@{/rooms}">Tìm phòng trọ</a></li>
+                    <li><a th:href="@{/booking}">Đặt phòng</a></li>
+                    <li><a th:href="@{/payment}">Thanh toán</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-column">
+                <h3>Hỗ trợ</h3>
+                <ul>
+                    <li><a th:href="@{/faq}">FAQ</a></li>
+                    <li><a th:href="@{/terms}">Điều khoản sử dụng</a></li>
+                    <li><a th:href="@{/privacy}">Chính sách bảo mật</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-column">
+                <h3>Liên hệ</h3>
+                <ul>
+                    <li><i class="fas fa-map-marker-alt"></i> 123 Nguyễn Huệ, Q.1, TP.HCM</li>
+                    <li><i class="fas fa-phone"></i> 0123 456 789</li>
+                    <li><i class="fas fa-envelope"></i> info@nhatroxyz.com</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2025 Hệ thống Quản lý nhà trọ | All Rights Reserved</p>
+        </div>
+    </div>
+</footer>
+</body>
+</html>
