@@ -16,10 +16,33 @@ public class AuthService {
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
-    public User authenticate(String username, String password) {
-        User user = userRepository.findByUsername(username);
+    public User authenticate(String usernameOrEmail, String password) {
+        System.out.println("Authenticating: " + usernameOrEmail);
 
-        if (user != null && passwordEncoder.matches(password, user.getPassword())) {
+        // Tìm kiếm theo username
+        User user = userRepository.findByUsername(usernameOrEmail);
+        if (user != null) {
+            System.out.println("Found user by username: " + user.getUsername());
+        }
+
+        // Nếu không tìm thấy theo username, thử tìm theo email
+        if (user == null) {
+            user = userRepository.findByEmail(usernameOrEmail);
+            if (user != null) {
+                System.out.println("Found user by email: " + user.getEmail());
+            }
+        }
+
+        if (user == null) {
+            System.out.println("User not found");
+            return null;
+        }
+
+        // Kiểm tra mật khẩu
+        boolean passwordMatches = passwordEncoder.matches(password, user.getPassword());
+        System.out.println("Password matches: " + passwordMatches);
+
+        if (passwordMatches) {
             return user;
         }
 

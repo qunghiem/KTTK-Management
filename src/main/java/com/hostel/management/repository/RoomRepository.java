@@ -14,6 +14,9 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
 
     List<Room> findByStatus(String status);
 
+    // Thêm phương thức mới để lấy 4 phòng có trạng thái "available" mới nhất
+    List<Room> findTop4ByStatusOrderByIdDesc(String status);
+
     @Query("SELECT r FROM Room r WHERE " +
             "(:price IS NULL OR r.price <= :price) AND " +
             "(:area IS NULL OR r.area >= :area) AND " +

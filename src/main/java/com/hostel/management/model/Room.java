@@ -1,5 +1,6 @@
 package com.hostel.management.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -49,5 +50,25 @@ public class Room {
 
     @ManyToOne
     @JoinColumn(name = "room_type_id")
+    @JsonIgnoreProperties("rooms") // Tránh lỗi vòng lặp JSON
     private RoomType roomType;
+
+    // Thêm các trường mới
+    @Column(name = "has_ac")
+    private Boolean hasAC;
+
+    @Column(name = "has_wifi")
+    private Boolean hasWifi;
+
+    @Column(name = "has_furniture")
+    private Boolean hasFurniture;
+
+    @Column(name = "has_parking")
+    private Boolean hasParking;
+
+    @Column(name = "description")
+    private String description;
+
+    @Column(name = "address")
+    private String address;
 }

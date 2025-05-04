@@ -682,7 +682,7 @@
                             </select>
                         </div>
 
-                        <button type="submit" class="booking-btn" th:if="${room.status == 'available'}">Đặt phòng ngay</button>
+                        <a th:href="@{'/booking/form/' + ${room.id}}" class="booking-btn" th:if="${room.status == 'available'}">Đặt phòng ngay</a>
                         <button type="button" class="booking-btn" disabled th:if="${room.status != 'available'}" style="background-color: #ccc;">Phòng đã được đặt</button>
                     </form>
 

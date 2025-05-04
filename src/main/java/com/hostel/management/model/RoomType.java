@@ -1,5 +1,6 @@
 package com.hostel.management.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,6 +9,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
+import java.util.List;
 
 @Entity
 @Table(name = "room_types")
@@ -27,4 +29,8 @@ public class RoomType {
     @Positive(message = "Giá cơ bản phải là số dương")
     @Column(name = "base_price")
     private float basePrice;
+
+    @OneToMany(mappedBy = "roomType")
+    @JsonIgnoreProperties("roomType") // Tránh lỗi vòng lặp JSON
+    private List<Room> rooms;
 }

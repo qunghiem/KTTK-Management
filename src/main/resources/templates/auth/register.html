@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng nhập - Hệ thống quản lý nhà trọ</title>
+    <title>Đăng ký - Hệ thống quản lý nhà trọ</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <style>
         * {
@@ -58,7 +58,8 @@
         }
 
         input[type="text"],
-        input[type="password"] {
+        input[type="password"],
+        input[type="email"] {
             width: 100%;
             padding: 12px 15px;
             border: 1px solid #ddd;
@@ -68,7 +69,8 @@
         }
 
         input[type="text"]:focus,
-        input[type="password"]:focus {
+        input[type="password"]:focus,
+        input[type="email"]:focus {
             border-color: #3498db;
             outline: none;
         }
@@ -93,7 +95,7 @@
 
         .links {
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             margin-top: 15px;
         }
 
@@ -197,34 +199,36 @@
     <div class="logo">
         <img src="https://via.placeholder.com/200x60" alt="Logo Nhà trọ">
     </div>
-    <h1>Đăng nhập</h1>
+    <h1>Đăng ký tài khoản</h1>
 
     <!-- Thêm thông báo lỗi và tin nhắn thành công -->
     <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
     <div th:if="${message}" class="alert alert-success" role="alert" th:text="${message}"></div>
 
-    <form th:action="@{/login}" method="post">
-        <!-- Nếu có redirect, lưu lại trong form -->
-        <input type="hidden" name="redirect" th:if="${redirect != null}" th:value="${redirect}">
+    <form th:action="@{/register}" method="post" th:object="${user}">
+        <div class="form-group">
+            <label for="username">Tên đăng nhập</label>
+            <input type="text" id="username" th:field="*{username}" required>
+            <span th:if="${#fields.hasErrors('username')}" th:errors="*{username}" class="text-danger"></span>
+        </div>
 
         <div class="form-group">
-            <label for="username">Email / Tên đăng nhập</label>
-            <input type="text" id="username" name="username" required>
+            <label for="email">Email</label>
+            <input type="email" id="email" th:field="*{email}" required>
+            <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="text-danger"></span>
         </div>
+
         <div class="form-group">
             <label for="password">Mật khẩu</label>
-            <input type="password" id="password" name="password" required>
+            <input type="password" id="password" th:field="*{password}" required>
+            <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="text-danger"></span>
         </div>
-        <button type="submit" class="btn">Đăng nhập</button>
-        <div class="links">
-            <a th:href="@{/forgot-password}">Quên mật khẩu?</a>
-            <!-- Nếu có redirect, truyền vào link đăng ký -->
-            <a th:href="${redirect != null ? '/register?redirect=' + redirect : '/register'}">Đăng ký tài khoản mới</a>
-        </div>
+
+        <button type="submit" class="btn">Đăng ký</button>
     </form>
 
     <div class="social-login">
-        <p>Hoặc đăng nhập với</p>
+        <p>Hoặc đăng ký với</p>
         <div>
             <button class="social-btn facebook">
                 <i class="fab fa-facebook-f"></i> Facebook

@@ -23,6 +23,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/css/**", "/js/**", "/images/**").permitAll()
                 .antMatchers("/", "/home", "/login", "/register", "/rooms", "/rooms/*").permitAll()
+                .antMatchers("/api/**").permitAll()
+                .antMatchers("/reset-password", "/verify-account").permitAll() // Thêm các đường dẫn liên quan đến tài khoản
+                .antMatchers("/booking/form/**", "/booking/create", "/booking/confirm/**", "/payment/**").authenticated() // Yêu cầu đăng nhập cho các đường dẫn đặt phòng
                 .antMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
                 .and()
@@ -31,6 +34,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .permitAll()
                 .and()
                 .logout()
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/login?logout")
                 .permitAll()
                 .and()
                 .exceptionHandling().accessDeniedPage("/403");

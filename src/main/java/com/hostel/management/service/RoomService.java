@@ -29,4 +29,11 @@ public class RoomService {
     public List<Room> getAvailableRooms() {
         return roomRepository.findByStatus("available");
     }
+
+    // Thêm phương thức mới để lấy danh sách phòng nổi bật
+    public List<Room> getFeaturedRooms() {
+        // Lấy 4 phòng có trạng thái "available" mới nhất
+        // Bạn có thể thay đổi logic này tùy theo yêu cầu
+        return roomRepository.findTop4ByStatusOrderByIdDesc("available");
+    }
 }
