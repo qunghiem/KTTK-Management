@@ -49,4 +49,16 @@ public class Booking {
     @Positive(message = "Tiền đặt cọc phải là số dương")
     @Column(nullable = false)
     private float deposit;
+
+    @Column(name = "duration")
+    private int duration;
+
+    @Column(name = "num_tenants")
+    private int numTenants;
+
+    @Column(name = "vehicle")
+    private String vehicle;
+
+    @Column(name = "notes")
+    private String notes;
 }
