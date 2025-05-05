@@ -14,4 +14,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
     List<Payment> findByCustomerId(Customer customerId);
 
     Payment findByTransactionCode(String transactionCode);
+
+    Payment findByBookingId(int bookingId);
 }

@@ -136,9 +136,55 @@ public class PaymentController {
             return "redirect:/customer/bookings?error=booking_not_found";
         }
 
+        // Lấy thông tin thanh toán từ session
+        Payment payment = (Payment) session.getAttribute("payment");
+
+        // Nếu không có trong session, tìm kiếm theo bookingId
+        if (payment == null) {
+            // Giả sử có phương thức getPaymentByBookingId
+            payment = paymentService.getPaymentByBookingId(bookingId);
+        }
+
         model.addAttribute("booking", booking);
+        model.addAttribute("payment", payment);
         model.addAttribute("bookingCode", "BK" + String.format("%06d", booking.getId()));
 
         return "booking/bookingSuccess";
+    }
+
+    @PostMapping("/payment/confirm/{bookingId}")
+    public String confirmPayment(@PathVariable int bookingId, HttpSession session) {
+        try {
+            // Lấy thông tin đặt phòng
+            Booking booking = bookingService.getBookingById(bookingId);
+
+            if (booking == null) {
+                return "redirect:/customer/bookings?error=booking_not_found";
+            }
+
+            // Cập nhật trạng thái booking thành "confirmed"
+            booking.setStatus("confirmed");
+            bookingService.updateBooking(booking);
+
+            // Tạo một Payment mới
+            Payment payment = new Payment();
+            payment.setAmount(booking.getDeposit());
+            payment.setCustomerId(booking.getCustomerId());
+            payment.setMethod("bank_transfer"); // Hoặc lấy từ session
+            payment.setPaymentDate(new Date());
+            payment.setTransactionCode("TX" + System.currentTimeMillis()); // Tạo mã giao dịch
+            payment.setBookingId(bookingId); // Gán bookingId
+
+            // Lưu thông tin thanh toán
+            Payment processedPayment = paymentService.processPayment(payment);
+
+            // Lưu payment ID vào session để sử dụng ở trang success
+            session.setAttribute("payment", processedPayment);
+
+            // Chuyển đến trang thành công
+            return "redirect:/booking/success/" + bookingId;
+        } catch (Exception e) {
+            return "redirect:/payment/" + bookingId + "?error=" + e.getMessage();
+        }
     }
 }

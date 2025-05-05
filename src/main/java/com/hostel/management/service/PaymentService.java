@@ -43,4 +43,8 @@ public class PaymentService {
     private String generateTransactionCode() {
         return UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase();
     }
+
+    public Payment getPaymentByBookingId(int bookingId) {
+        return paymentRepository.findByBookingId(bookingId);
+    }
 }

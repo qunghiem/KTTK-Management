@@ -42,4 +42,15 @@ public class Payment {
 
     @Column(name = "transaction_code")
     private String transactionCode;
+
+    @Column(name = "booking_id")
+    private int bookingId;
+
+    public int getBookingId() {
+        return bookingId;
+    }
+
+    public void setBookingId(int bookingId) {
+        this.bookingId = bookingId;
+    }
 }

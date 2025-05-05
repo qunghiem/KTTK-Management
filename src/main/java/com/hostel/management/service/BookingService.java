@@ -83,6 +83,11 @@ public class BookingService {
         return booking.orElse(null);
     }
 
+    @Transactional
+    public Booking updateBooking(Booking booking) {
+        return bookingRepository.save(booking);
+    }
+
     public float calculateDeposit(float roomPrice) {
         return roomPrice * 0.3f; // 30% giá phòng
     }
