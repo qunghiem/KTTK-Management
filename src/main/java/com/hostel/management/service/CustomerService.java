@@ -14,6 +14,12 @@ public class CustomerService {
     public Customer createCustomer(Customer customer) {
         // Kiểm tra số điện thoại đã tồn tại chưa
         if (customerRepository.existsByPhoneNumber(customer.getPhoneNumber())) {
+            Customer existingCustomer = customerRepository.findByPhoneNumber(customer.getPhoneNumber());
+            // Nếu số điện thoại thuộc về user hiện tại, cập nhật thông tin
+            if (existingCustomer.getUser().getId() == customer.getUser().getId()) {
+                existingCustomer.setFullName(customer.getFullName());
+                return customerRepository.save(existingCustomer);
+            }
             throw new RuntimeException("Số điện thoại đã được sử dụng");
         }
 
@@ -26,6 +32,10 @@ public class CustomerService {
 
     public Customer getCustomerByUser(User user) {
         return customerRepository.findByUser(user);
+    }
+
+    public Customer getCustomerByPhoneNumber(String phoneNumber) {
+        return customerRepository.findByPhoneNumber(phoneNumber);
     }
 
     public boolean validateCustomerInfo(Customer customer) {
