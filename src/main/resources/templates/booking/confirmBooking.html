@@ -561,7 +561,7 @@
 
             <div class="confirmation-actions">
                 <a href="javascript:history.back()" class="btn btn-outline">Quay lại</a>
-                <a th:href="@{'/payment/form/' + ${booking.id}}" class="btn btn-primary">Tiếp tục thanh toán</a>
+                <a th:href="@{'/payment/' + ${booking.id}}" class="btn btn-primary">Tiếp tục thanh toán</a>
             </div>
         </div>
 
@@ -591,7 +591,8 @@
                 <p>Hãy đảm bảo kiểm tra kỹ thông tin đặt phòng trước khi tiến hành thanh toán.</p>
             </div>
 
-            <form th:action="@{'/payment/form/' + ${booking.id}}" method="get">
+            <form th:action="@{'/payment/' + ${booking.id}}" method="get">
+
                 <button type="submit" class="payment-button">
                     <i class="fas fa-lock mr-2"></i> Thanh toán tiền cọc
                 </button>
