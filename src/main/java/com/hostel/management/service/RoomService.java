@@ -36,4 +36,8 @@ public class RoomService {
         // Bạn có thể thay đổi logic này tùy theo yêu cầu
         return roomRepository.findTop4ByStatusOrderByIdDesc("available");
     }
+
+    public List<Room> searchRoomsByHomeFilter(String district, Float minPrice, Float maxPrice, String roomType) {
+        return roomRepository.findByHomeFilter(district, minPrice, maxPrice, roomType);
+    }
 }

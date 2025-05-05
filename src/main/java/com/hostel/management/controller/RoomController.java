@@ -15,18 +15,44 @@ public class RoomController {
     private RoomService roomService;
 
     @GetMapping("/rooms")
-    public String searchRooms(@RequestParam(required = false) Float price,
-                              @RequestParam(required = false) Float area,
-                              @RequestParam(required = false) String status,
-                              @RequestParam(required = false) Integer floor,
-                              Model model) {
+    public String searchRooms(
+            @RequestParam(required = false) String district,
+            @RequestParam(required = false) String priceRange,
+            @RequestParam(required = false) String roomType,
+            @RequestParam(required = false) Float price,
+            @RequestParam(required = false) Float area,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) Integer floor,
+            Model model) {
+
         List<Room> rooms;
 
-        if (price != null || area != null || status != null || floor != null) {
-            // Tìm kiếm phòng theo tiêu chí
+        // Xử lý tham số từ form trang chủ
+        Float minPrice = null;
+        Float maxPrice = null;
+
+        if (priceRange != null && !priceRange.isEmpty()) {
+            String[] prices = priceRange.split("-");
+            if (prices.length == 2) {
+                try {
+                    minPrice = Float.parseFloat(prices[0]);
+                    maxPrice = Float.parseFloat(prices[1]);
+                } catch (NumberFormatException e) {
+                    // Xử lý lỗi
+                }
+            }
+        }
+
+        // Ưu tiên tìm kiếm từ form trang chủ
+        if (district != null || priceRange != null || roomType != null) {
+            rooms = roomService.searchRoomsByHomeFilter(district, minPrice, maxPrice, roomType);
+        }
+        // Sử dụng tìm kiếm thông thường nếu có tham số
+        else if (price != null || area != null || status != null || floor != null) {
             rooms = roomService.searchRooms(price, area, status, floor);
-        } else {
-            // Hiển thị tất cả phòng có sẵn
+        }
+        // Mặc định hiển thị tất cả phòng có sẵn
+        else {
             rooms = roomService.getAvailableRooms();
         }
 
