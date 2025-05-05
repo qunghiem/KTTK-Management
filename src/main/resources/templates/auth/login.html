@@ -203,10 +203,7 @@
     <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
     <div th:if="${message}" class="alert alert-success" role="alert" th:text="${message}"></div>
 
-    <form th:action="@{/login}" method="post">
-        <!-- Nếu có redirect, lưu lại trong form -->
-        <input type="hidden" name="redirect" th:if="${redirect != null}" th:value="${redirect}">
-
+    <form th:action="@{/login-process}" method="post"> <!-- Sử dụng URL khác để tránh xung đột -->
         <div class="form-group">
             <label for="username">Email / Tên đăng nhập</label>
             <input type="text" id="username" name="username" required>
@@ -216,11 +213,6 @@
             <input type="password" id="password" name="password" required>
         </div>
         <button type="submit" class="btn">Đăng nhập</button>
-        <div class="links">
-            <a th:href="@{/forgot-password}">Quên mật khẩu?</a>
-            <!-- Nếu có redirect, truyền vào link đăng ký -->
-            <a th:href="${redirect != null ? '/register?redirect=' + redirect : '/register'}">Đăng ký tài khoản mới</a>
-        </div>
     </form>
 
     <div class="social-login">

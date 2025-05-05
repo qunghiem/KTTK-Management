@@ -38,9 +38,20 @@ public class AuthService {
             return null;
         }
 
+        // In ra để kiểm tra
+        System.out.println("Stored password: " + user.getPassword());
+        System.out.println("Input password: " + password);
+
         // Kiểm tra mật khẩu
+        // Thử so sánh trực tiếp trước
+        if (password.equals(user.getPassword())) {
+            System.out.println("Direct password match successful");
+            return user;
+        }
+
+        // Nếu so sánh trực tiếp không thành công, thử với mã hóa
         boolean passwordMatches = passwordEncoder.matches(password, user.getPassword());
-        System.out.println("Password matches: " + passwordMatches);
+        System.out.println("Password matches with BCrypt: " + passwordMatches);
 
         if (passwordMatches) {
             return user;
