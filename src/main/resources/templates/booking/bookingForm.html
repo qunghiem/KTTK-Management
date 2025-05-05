@@ -376,8 +376,8 @@
             <div class="room-price" th:text="${#numbers.formatDecimal(room.price, 0, 'COMMA', 0, 'POINT') + ' đ/tháng'}">4.500.000 đ/tháng</div>
         </div>
 
-        <form th:action="@{/booking/create}" method="post" th:object="${booking}">
-            <input type="hidden" th:field="*{roomId.id}">
+        <form th:action="@{/booking/create}" method="post">
+            <input type="hidden" name="roomId.id" th:value="${room.id}">
 
             <h3 class="form-subtitle">Thông tin cá nhân</h3>
 
@@ -401,21 +401,21 @@
                 <div class="form-col">
                     <div class="form-group">
                         <label class="form-label">Email <span class="required">*</span></label>
-                        <input type="email" class="form-control" name="email" required th:value="${customer != null ? customer.email : ''}">
+                        <input type="email" class="form-control" name="email" required th:value="${email}">
                     </div>
                 </div>
 
                 <div class="form-col">
                     <div class="form-group">
                         <label class="form-label">Số CMND/CCCD <span class="required">*</span></label>
-                        <input type="text" class="form-control" name="identityCard" required th:value="${customer != null ? customer.identityCard : ''}">
+                        <input type="text" class="form-control" name="identityCard" required>
                     </div>
                 </div>
             </div>
 
             <div class="form-group">
                 <label class="form-label">Địa chỉ</label>
-                <input type="text" class="form-control" name="address" th:value="${customer != null ? customer.address : ''}">
+                <input type="text" class="form-control" name="address">
             </div>
 
             <h3 class="form-subtitle">Chi tiết đặt phòng</h3>
@@ -424,7 +424,7 @@
                 <div class="form-col">
                     <div class="form-group">
                         <label class="form-label">Ngày nhận phòng <span class="required">*</span></label>
-                        <input type="date" class="form-control" th:field="*{startDate}" required>
+                        <input type="date" class="form-control" name="startDate" required th:value="${#dates.format(booking.startDate, 'yyyy-MM-dd')}">
                     </div>
                 </div>
 
@@ -432,10 +432,10 @@
                     <div class="form-group">
                         <label class="form-label">Thời hạn thuê <span class="required">*</span></label>
                         <select class="form-control" name="duration" required>
-                            <option value="1">1 tháng</option>
-                            <option value="3">3 tháng</option>
-                            <option value="6" selected>6 tháng</option>
-                            <option value="12">12 tháng</option>
+                            <option value="1" th:selected="${duration == 1}">1 tháng</option>
+                            <option value="3" th:selected="${duration == 3}">3 tháng</option>
+                            <option value="6" th:selected="${duration == 6}">6 tháng</option>
+                            <option value="12" th:selected="${duration == 12}">12 tháng</option>
                         </select>
                     </div>
                 </div>
@@ -446,8 +446,8 @@
                     <div class="form-group">
                         <label class="form-label">Số người ở <span class="required">*</span></label>
                         <select class="form-control" name="numTenants" required>
-                            <option value="1">1 người</option>
-                            <option value="2" selected>2 người</option>
+                            <option value="1" th:selected="${numTenants == 1}">1 người</option>
+                            <option value="2" th:selected="${numTenants == 2}">2 người</option>
                         </select>
                     </div>
                 </div>
@@ -456,10 +456,10 @@
                     <div class="form-group">
                         <label class="form-label">Phương tiện</label>
                         <select class="form-control" name="vehicle">
-                            <option value="none" selected>Không có</option>
-                            <option value="motorbike">Xe máy</option>
-                            <option value="car">Ô tô</option>
-                            <option value="bicycle">Xe đạp</option>
+                            <option value="none" th:selected="${vehicle == 'none'}">Không có</option>
+                            <option value="motorbike" th:selected="${vehicle == 'motorbike'}">Xe máy</option>
+                            <option value="car" th:selected="${vehicle == 'car'}">Ô tô</option>
+                            <option value="bicycle" th:selected="${vehicle == 'bicycle'}">Xe đạp</option>
                         </select>
                     </div>
                 </div>

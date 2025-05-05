@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.util.Date;
+import java.util.Calendar;
 
 @Controller
 public class BookingController {
@@ -51,40 +52,116 @@ public class BookingController {
         Booking booking = new Booking();
         booking.setRoomId(room);
 
+        // Khởi tạo ngày bắt đầu là ngày mai
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_MONTH, 1);
+        booking.setStartDate(calendar.getTime());
+
         // Lấy thông tin khách hàng nếu đã có
         Customer customer = customerService.getCustomerByUser(user);
+
+        // Nếu không có thông tin khách hàng, tạo đối tượng mới
+        if (customer == null) {
+            customer = new Customer();
+            // Không gọi setEmail vì Customer không có trường này
+        }
 
         model.addAttribute("booking", booking);
         model.addAttribute("room", room);
         model.addAttribute("customer", customer);
 
+        // Thêm các thuộc tính bổ sung cho form
+        model.addAttribute("duration", 6); // Mặc định 6 tháng
+        model.addAttribute("numTenants", 2); // Mặc định 2 người
+        model.addAttribute("vehicle", "none"); // Mặc định không có phương tiện
+        model.addAttribute("email", user.getEmail()); // Email từ user
+
         return "booking/bookingForm";
     }
 
+
     @PostMapping("/booking/create")
-    public String createBooking(@Valid @ModelAttribute("booking") Booking booking,
+    public String createBooking(@ModelAttribute("booking") Booking booking,
+                                @RequestParam(value = "fullName", required = false) String fullName,
+                                @RequestParam(value = "phoneNumber", required = false) String phoneNumber,
+                                @RequestParam(value = "email", required = false) String email,
+                                @RequestParam(value = "identityCard", required = false) String identityCard,
+                                @RequestParam(value = "address", required = false) String address,
+                                @RequestParam(value = "duration", defaultValue = "6") int duration,
+                                @RequestParam(value = "numTenants", defaultValue = "2") int numTenants,
+                                @RequestParam(value = "vehicle", defaultValue = "none") String vehicle,
+                                @RequestParam(value = "notes", required = false) String notes,
                                 BindingResult result,
                                 HttpSession session,
                                 Model model) {
         if (result.hasErrors()) {
-            model.addAttribute("room", booking.getRoomId());
+            Room room = roomService.getRoomById(booking.getRoomId().getId());
+            model.addAttribute("room", room);
+            model.addAttribute("error", "Có lỗi xảy ra khi xử lý form. Vui lòng kiểm tra lại thông tin.");
             return "booking/bookingForm";
         }
 
         try {
-            // Thiết lập ngày đặt phòng là ngày hiện tại
+            // Lấy user từ session
+            User user = (User) session.getAttribute("user");
+            if (user == null) {
+                return "redirect:/login";
+            }
+
+            // Lấy hoặc tạo mới customer
+            Customer customer = customerService.getCustomerByUser(user);
+            if (customer == null) {
+                customer = new Customer();
+                customer.setUser(user);
+            }
+
+            // Cập nhật thông tin customer
+            if (fullName != null && !fullName.isEmpty()) {
+                customer.setFullName(fullName);
+            }
+            if (phoneNumber != null && !phoneNumber.isEmpty()) {
+                customer.setPhoneNumber(phoneNumber);
+            }
+
+            // Lưu hoặc cập nhật customer
+            customer = customerService.createCustomer(customer);
+
+            // Thiết lập thông tin booking
+            booking.setCustomerId(customer);
             booking.setBookingDate(new Date());
+            booking.setStatus("pending");
+
+            // Không thể sử dụng setNotes vì Booking không có trường này
+            // Thay vào đó, chúng ta có thể lưu thông tin bổ sung vào một trường khác nếu cần
+
+            // Tính tiền đặt cọc
+            booking.setDeposit(booking.getRoomId().getPrice() * 0.3f); // 30% giá phòng
 
             // Lưu thông tin đặt phòng
             Booking savedBooking = bookingService.createBooking(booking);
 
-            // Lưu ID đặt phòng vào session để sử dụng ở bước tiếp theo
+            // Lưu ID đặt phòng vào session
             session.setAttribute("bookingId", savedBooking.getId());
 
             return "redirect:/booking/confirm/" + savedBooking.getId();
         } catch (Exception e) {
+            e.printStackTrace();
             model.addAttribute("error", e.getMessage());
-            model.addAttribute("room", booking.getRoomId());
+            Room room = roomService.getRoomById(booking.getRoomId().getId());
+            model.addAttribute("room", room);
+
+            // Trả lại các giá trị đã nhập vào form
+            Customer customer = new Customer();
+            customer.setFullName(fullName);
+            customer.setPhoneNumber(phoneNumber);
+            model.addAttribute("customer", customer);
+
+            // Trả lại các giá trị khác
+            model.addAttribute("duration", duration);
+            model.addAttribute("numTenants", numTenants);
+            model.addAttribute("vehicle", vehicle);
+            model.addAttribute("notes", notes);
+
             return "booking/bookingForm";
         }
     }
