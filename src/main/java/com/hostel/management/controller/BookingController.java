@@ -12,7 +12,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.util.Date;
@@ -81,31 +82,39 @@ public class BookingController {
 
 
     @PostMapping("/booking/create")
-    public String createBooking(@ModelAttribute("booking") Booking booking,
-                                @RequestParam(value = "fullName", required = false) String fullName,
-                                @RequestParam(value = "phoneNumber", required = false) String phoneNumber,
-                                @RequestParam(value = "email", required = false) String email,
-                                @RequestParam(value = "identityCard", required = false) String identityCard,
-                                @RequestParam(value = "address", required = false) String address,
-                                @RequestParam(value = "duration", defaultValue = "6") int duration,
-                                @RequestParam(value = "numTenants", defaultValue = "2") int numTenants,
-                                @RequestParam(value = "vehicle", defaultValue = "none") String vehicle,
-                                @RequestParam(value = "notes", required = false) String notes,
-                                BindingResult result,
-                                HttpSession session,
-                                Model model) {
-        if (result.hasErrors()) {
-            Room room = roomService.getRoomById(booking.getRoomId().getId());
-            model.addAttribute("room", room);
-            model.addAttribute("error", "Có lỗi xảy ra khi xử lý form. Vui lòng kiểm tra lại thông tin.");
-            return "booking/bookingForm";
-        }
+    public String createBooking(
+            @RequestParam(value = "roomId.id", required = true) int roomId,
+            @RequestParam(value = "startDate", required = true) String startDateStr, // Nhận dưới dạng String
+            @RequestParam(value = "fullName", required = true) String fullName,
+            @RequestParam(value = "phoneNumber", required = true) String phoneNumber,
+            @RequestParam(value = "email", required = false) String email,
+            @RequestParam(value = "identityCard", required = false) String identityCard,
+            @RequestParam(value = "address", required = false) String address,
+            @RequestParam(value = "duration", defaultValue = "6") int duration,
+            @RequestParam(value = "numTenants", defaultValue = "2") int numTenants,
+            @RequestParam(value = "vehicle", defaultValue = "none") String vehicle,
+            @RequestParam(value = "notes", required = false) String notes,
+            HttpSession session,
+            Model model) {
+
+        System.out.println("Bắt đầu xử lý đặt phòng với ID phòng: " + roomId);
+        System.out.println("Ngày nhận phòng: " + startDateStr);
 
         try {
+            // Chuyển chuỗi ngày thành đối tượng Date
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            Date startDate = dateFormat.parse(startDateStr);
+
             // Lấy user từ session
             User user = (User) session.getAttribute("user");
             if (user == null) {
                 return "redirect:/login";
+            }
+
+            // Lấy thông tin phòng
+            Room room = roomService.getRoomById(roomId);
+            if (room == null) {
+                throw new RuntimeException("Không tìm thấy thông tin phòng");
             }
 
             // Lấy hoặc tạo mới customer
@@ -116,26 +125,22 @@ public class BookingController {
             }
 
             // Cập nhật thông tin customer
-            if (fullName != null && !fullName.isEmpty()) {
-                customer.setFullName(fullName);
-            }
-            if (phoneNumber != null && !phoneNumber.isEmpty()) {
-                customer.setPhoneNumber(phoneNumber);
-            }
+            customer.setFullName(fullName);
+            customer.setPhoneNumber(phoneNumber);
 
             // Lưu hoặc cập nhật customer
             customer = customerService.createCustomer(customer);
 
-            // Thiết lập thông tin booking
+            // Tạo đối tượng Booking mới
+            Booking booking = new Booking();
+            booking.setRoomId(room);
             booking.setCustomerId(customer);
+            booking.setStartDate(startDate);
             booking.setBookingDate(new Date());
             booking.setStatus("pending");
 
-            // Không thể sử dụng setNotes vì Booking không có trường này
-            // Thay vào đó, chúng ta có thể lưu thông tin bổ sung vào một trường khác nếu cần
-
             // Tính tiền đặt cọc
-            booking.setDeposit(booking.getRoomId().getPrice() * 0.3f); // 30% giá phòng
+            booking.setDeposit(room.getPrice() * 0.3f); // 30% giá phòng
 
             // Lưu thông tin đặt phòng
             Booking savedBooking = bookingService.createBooking(booking);
@@ -146,8 +151,12 @@ public class BookingController {
             return "redirect:/booking/confirm/" + savedBooking.getId();
         } catch (Exception e) {
             e.printStackTrace();
-            model.addAttribute("error", e.getMessage());
-            Room room = roomService.getRoomById(booking.getRoomId().getId());
+            System.out.println("Lỗi khi xử lý đặt phòng: " + e.getMessage());
+
+            model.addAttribute("error", "Có lỗi xảy ra khi xử lý form: " + e.getMessage());
+
+            // Lấy lại thông tin phòng
+            Room room = roomService.getRoomById(roomId);
             model.addAttribute("room", room);
 
             // Trả lại các giá trị đã nhập vào form
@@ -155,6 +164,7 @@ public class BookingController {
             customer.setFullName(fullName);
             customer.setPhoneNumber(phoneNumber);
             model.addAttribute("customer", customer);
+            model.addAttribute("email", email);
 
             // Trả lại các giá trị khác
             model.addAttribute("duration", duration);
