@@ -124,6 +124,10 @@ public class BookingController {
             customer.setFullName(fullName);
             customer.setPhoneNumber(phoneNumber);
 
+            // Lưu email và CMND vào session để sử dụng ở trang xác nhận
+            session.setAttribute("customerEmail", email);
+            session.setAttribute("customerIdentityCard", identityCard);
+
             try {
                 // Lưu hoặc cập nhật customer
                 customer = customerService.createCustomer(customer);
@@ -243,6 +247,10 @@ public class BookingController {
         System.out.println("NumTenants: " + booking.getNumTenants());
         System.out.println("Vehicle: " + booking.getVehicle());
 
+        // Thêm email và CMND từ session vào model
+        model.addAttribute("customerEmail", session.getAttribute("customerEmail"));
+        model.addAttribute("customerIdentityCard", session.getAttribute("customerIdentityCard"));
+
         model.addAttribute("booking", booking);
         return "booking/confirmBooking";
     }
@@ -268,6 +276,11 @@ public class BookingController {
             return "redirect:/payment/" + bookingId;
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
+
+            // Thêm lại thông tin email và CMND khi có lỗi xảy ra
+            model.addAttribute("customerEmail", session.getAttribute("customerEmail"));
+            model.addAttribute("customerIdentityCard", session.getAttribute("customerIdentityCard"));
+
             model.addAttribute("booking", bookingService.getBookingById(bookingId));
             return "booking/confirmBooking";
         }
@@ -302,6 +315,10 @@ public class BookingController {
         if (booking == null) {
             return "redirect:/customer/bookings?error=booking_not_found";
         }
+
+        // Thêm email và CMND từ session vào model khi xem chi tiết
+        model.addAttribute("customerEmail", session.getAttribute("customerEmail"));
+        model.addAttribute("customerIdentityCard", session.getAttribute("customerIdentityCard"));
 
         model.addAttribute("booking", booking);
         return "booking/bookingDetail";

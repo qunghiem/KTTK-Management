@@ -538,13 +538,16 @@
                         <div class="detail-label">Số điện thoại:</div>
                         <div class="detail-value" th:text="${booking.customerId.phoneNumber}">0912345678</div>
                     </div>
+                    <!-- Thay đổi phần hiển thị email -->
                     <div class="detail-item">
                         <div class="detail-label">Email:</div>
-                        <div class="detail-value" th:text="${booking.customerId.email}">nguyenvana@gmail.com</div>
+                        <div class="detail-value" th:text="${customerEmail}">nguyenvana@gmail.com</div>
                     </div>
+
+                    <!-- Thay đổi phần hiển thị CMND/CCCD -->
                     <div class="detail-item">
                         <div class="detail-label">Số CMND/CCCD:</div>
-                        <div class="detail-value" th:text="${booking.customerId.identityCard}">0123456789</div>
+                        <div class="detail-value" th:text="${customerIdentityCard}">0123456789</div>
                     </div>
                 </div>
             </div>
