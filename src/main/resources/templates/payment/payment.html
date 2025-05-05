@@ -539,14 +539,14 @@
                     <div class="bank-info-label">Số tiền:</div>
                     <div class="bank-info-value">
                         <span th:text="${#numbers.formatDecimal(booking.roomId.price, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}">4,500,000 VNĐ</span>
-                        <button class="copy-btn" th:onclick="'copyToClipboard(\'' + ${booking.roomId.price} + '\')'">Sao chép</button>
+                        <button class="copy-btn" th:data-price="${booking.roomId.price}" onclick="copyToClipboard(this.getAttribute('data-price'))">Sao chép</button>
                     </div>
                 </div>
                 <div class="bank-info-item">
                     <div class="bank-info-label">Nội dung CK:</div>
                     <div class="bank-info-value">
                         <span th:text="${'BK-' + booking.id + ' ' + booking.customerId.fullName}">BK-20250424-7629 NGUYEN VAN A</span>
-                        <button class="copy-btn" th:onclick="'copyToClipboard(\'BK-' + ${booking.id} + ' ' + ${booking.customerId.fullName} + '\')'">Sao chép</button>
+                        <button class="copy-btn" th:data-content="${'BK-' + booking.id + ' ' + booking.customerId.fullName}" onclick="copyToClipboard(this.getAttribute('data-content'))">Sao chép</button>
                     </div>
                 </div>
             </div>
@@ -606,7 +606,7 @@
             <p class="qr-subtitle">Sử dụng ứng dụng ngân hàng để quét mã QR</p>
 
             <div class="qr-image">
-                <img src="https://via.placeholder.com/250x250" alt="Mã QR thanh toán">
+                <img src="blob:https://www.facebook.com/1f63d2ab-837b-4b0f-b995-78c52e956a97" alt="Mã QR thanh toán">
             </div>
 
             <div class="payment-total" th:text="${#numbers.formatDecimal(booking.roomId.price, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}">4.500.000 VNĐ</div>

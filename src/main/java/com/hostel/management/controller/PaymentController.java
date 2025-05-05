@@ -58,12 +58,12 @@ public class PaymentController {
 
         // Tạo mã QR thanh toán nếu cần
         String qrCode = null;
-        if ("momo".equals(paymentMethod) || "zalopay".equals(paymentMethod)) {
+
             qrCode = paymentService.generatePaymentQR(
                     booking.getDeposit(),
                     "Đặt cọc phòng " + booking.getRoomId().getRoomNumber()
             );
-        }
+
 
         model.addAttribute("booking", booking);
         model.addAttribute("payment", payment);
