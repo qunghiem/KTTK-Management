@@ -30,4 +30,10 @@ public class Customer {
     @OneToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    @Column(name = "email")
+    private String email;
+
+    @Column(name = "identity_card")
+    private String identityCard;
 }
