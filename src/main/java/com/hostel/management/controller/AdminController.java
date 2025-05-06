@@ -307,7 +307,8 @@ public class AdminController {
                 model.addAttribute("error", "Ngày kết thúc không thể sớm hơn ngày bắt đầu");
                 return "admin/reports";
             }
-
+            session.setAttribute("reportStartDate", startDate);
+            session.setAttribute("reportEndDate", endDate);
             // Tính tổng doanh thu và doanh thu theo phòng từ database
             double totalRevenue = calculateTotalRevenue(startDateObj, endDateObj);
             List<RoomRevenue> roomRevenues = calculateRoomRevenues(startDateObj, endDateObj);
@@ -466,6 +467,14 @@ public class AdminController {
             return "redirect:/login";
         }
 
+        // Nếu không có tham số, lấy từ session
+        if (startDate == null) {
+            startDate = (String) session.getAttribute("reportStartDate");
+        }
+        if (endDate == null) {
+            endDate = (String) session.getAttribute("reportEndDate");
+        }
+
         // Lấy thông tin phòng
         Room room = roomService.getRoomById(roomId);
         if (room == null) {
@@ -516,7 +525,11 @@ public class AdminController {
 
     // Phương thức lấy chi tiết doanh thu theo phòng và thời gian
     private List<Map<String, Object>> getRoomRevenueDetails(Room room, Date startDate, Date endDate) {
+        System.out.println("Debug - getRoomRevenueDetails called for room: " + room.getId());
+        System.out.println("Debug - startDate: " + startDate);
+        System.out.println("Debug - endDate: " + endDate);
         List<Map<String, Object>> results = new ArrayList<>();
+        System.out.println("DEBUG - getRoomRevenueDetails - roomId: " + room.getId() + ", startDate: " + startDate + ", endDate: " + endDate);
 
         // Điều chỉnh endDate
         Calendar calendar = Calendar.getInstance();
@@ -525,12 +538,31 @@ public class AdminController {
         calendar.add(Calendar.MILLISECOND, -1);
         Date adjustedEndDate = calendar.getTime();
 
+        System.out.println("DEBUG - Adjusted endDate: " + adjustedEndDate);
+
         try {
             // Lấy danh sách booking
             List<Booking> bookings = bookingRepository.findByRoomIdAndStartDateBetween(room, startDate, adjustedEndDate);
+            System.out.println("DEBUG - Found " + bookings.size() + " bookings for room " + room.getId());
+            // In chi tiết về các booking tìm thấy
+            for (Booking booking : bookings) {
+                System.out.println("DEBUG - Booking ID: " + booking.getId() + ", StartDate: " + booking.getStartDate());
+                Payment payment = paymentRepository.findByBookingId(booking.getId());
+                if (payment != null) {
+                    System.out.println("DEBUG - Payment found: " + payment.getAmount());
+                } else {
+                    System.out.println("DEBUG - No payment found for booking " + booking.getId());
+                }
+            }
 
             // Lấy danh sách tiện ích
             List<UtilityReading> utilities = utilityReadingRepository.findByRoomAndReadingDateBetween(room, startDate, adjustedEndDate);
+            System.out.println("DEBUG - Found " + utilities.size() + " utility readings for room " + room.getId());
+
+
+            // Sau khi truy vấn bookings và utilities
+            System.out.println("Debug - found " + bookings.size() + " bookings for room " + room.getId());
+            System.out.println("Debug - found " + utilities.size() + " utility readings for room " + room.getId());
 
             // Tạo map để lưu trữ dữ liệu theo tháng/năm
             Map<String, Map<String, Object>> monthlyData = new HashMap<>();
@@ -554,10 +586,10 @@ public class AdminController {
                         monthlyData.put(monthYear, detail);
                     } else {
                         Map<String, Object> detail = monthlyData.get(monthYear);
-                        double currentRoomAmount = (double) detail.get("roomAmount");
+                        double currentRoomAmount = ((Number) detail.get("roomAmount")).doubleValue();
                         detail.put("roomAmount", currentRoomAmount + payment.getAmount());
 
-                        double currentTotal = (double) detail.get("totalAmount");
+                        double currentTotal = ((Number) detail.get("totalAmount")).doubleValue();
                         detail.put("totalAmount", currentTotal + payment.getAmount());
                     }
                 }
@@ -582,7 +614,7 @@ public class AdminController {
                     monthlyData.put(monthYear, detail);
                 } else {
                     Map<String, Object> detail = monthlyData.get(monthYear);
-                    double currentUtilityAmount = (double) detail.get("utilityAmount");
+                    double currentUtilityAmount = ((Number) detail.get("utilityAmount")).doubleValue();
                     detail.put("utilityAmount", currentUtilityAmount + utilityAmount);
 
                     double currentTotal = (double) detail.get("totalAmount");
@@ -592,24 +624,21 @@ public class AdminController {
 
             // Chuyển map thành list và sắp xếp theo tháng/năm
             results = new ArrayList<>(monthlyData.values());
-            results.sort((d1, d2) -> {
-                String[] parts1 = ((String) d1.get("monthYear")).split("/");
-                String[] parts2 = ((String) d2.get("monthYear")).split("/");
+            System.out.println("DEBUG - Final results size: " + results.size());
 
-                int month1 = Integer.parseInt(parts1[0]);
-                int year1 = Integer.parseInt(parts1[1]);
-                int month2 = Integer.parseInt(parts2[0]);
-                int year2 = Integer.parseInt(parts2[1]);
-
-                if (year1 != year2) {
-                    return year1 - year2;
-                }
-                return month1 - month2;
-            });
+            // In ra thông tin về các kết quả
+            for (Map<String, Object> result : results) {
+                System.out.println("DEBUG - Result: monthYear=" + result.get("monthYear")
+                        + ", tenant=" + result.get("tenantName")
+                        + ", roomAmount=" + result.get("roomAmount")
+                        + ", utilityAmount=" + result.get("utilityAmount")
+                        + ", totalAmount=" + result.get("totalAmount"));
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+
 
         return results;
     }
