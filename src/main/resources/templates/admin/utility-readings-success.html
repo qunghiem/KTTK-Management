@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhập Chỉ Số Thành Công</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 400px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+        }
+
+        .success-icon {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .success-icon i {
+            font-size: 40px;
+            color: #4caf50;
+            border: 2px solid #4caf50;
+            border-radius: 5px;
+            padding: 15px;
+        }
+
+        .form-title {
+            text-align: center;
+            color: #333;
+            font-size: 20px;
+            margin-bottom: 25px;
+        }
+
+        .reading-details {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .detail-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .detail-label {
+            color: #666;
+        }
+
+        .detail-value {
+            color: #333;
+            font-weight: 500;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 14px;
+            padding-top: 12px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .total-label {
+            color: #666;
+        }
+
+        .total-value {
+            color: #333;
+            font-weight: bold;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background-color: #27a0dd;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #1b8bbd;
+        }
+
+        .btn-secondary {
+            background-color: #9e9e9e;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #8a8a8a;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="success-icon">
+        <i class="fas fa-check"></i>
+    </div>
+
+    <h2 class="form-title">Nhập Chỉ Số Thành Công</h2>
+
+    <div class="reading-details">
+        <div class="detail-row">
+            <div class="detail-label">Phòng</div>
+            <div class="detail-value" th:text="${'Phòng ' + room.roomNumber}">Phòng 101</div>
+        </div>
+
+        <div class="detail-row">
+            <div class="detail-label">Ngày Ghi Chỉ Số</div>
+            <div class="detail-value" th:text="${#dates.format(readingDate, 'dd/MM/yyyy')}">25/04/2025</div>
+        </div>
+
+        <div class="detail-row">
+            <div class="detail-label">Chỉ Số Điện Cũ</div>
+            <div class="detail-value" th:text="${previousElectric + ' kWh'}">150 kWh</div>
+        </div>
+
+        <div class="detail-row">
+            <div class="detail-label">Chỉ Số Điện Mới</div>
+            <div class="detail-value" th:text="${electricReading + ' kWh'}">200 kWh</div>
+        </div>
+
+        <div class="detail-row">
+            <div class="detail-label">Chỉ Số Nước Cũ</div>
+            <div class="detail-value" th:text="${previousWater + ' m³'}">50 m³</div>
+        </div>
+
+        <div class="detail-row">
+            <div class="detail-label">Chỉ Số Nước Mới</div>
+            <div class="detail-value" th:text="${waterReading + ' m³'}">70 m³</div>
+        </div>
+
+        <div class="total-row">
+            <div class="total-label">Tổng Tiền Điện</div>
+            <div class="total-value" th:text="${#numbers.formatDecimal(electricTotal, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}">125,000 VNĐ</div>
+        </div>
+
+        <div class="total-row">
+            <div class="total-label">Tổng Tiền Nước</div>
+            <div class="total-value" th:text="${#numbers.formatDecimal(waterTotal, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}">100,000 VNĐ</div>
+        </div>
+    </div>
+
+    <div class="buttons">
+        <a th:href="@{/admin/invoices/{id}(id=${invoiceId})}" class="btn btn-primary">Xem Chi Tiết Hóa Đơn</a>
+        <a th:href="@{/admin/dashboard}" class="btn btn-secondary">Quay Lại</a>
+    </div>
+</div>
+</body>
+</html>

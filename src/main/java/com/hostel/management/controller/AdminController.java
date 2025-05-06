@@ -3,17 +3,21 @@ package com.hostel.management.controller;
 import com.hostel.management.model.Booking;
 import com.hostel.management.model.Room;
 import com.hostel.management.model.User;
+import com.hostel.management.model.UtilityReading;
 import com.hostel.management.service.BookingService;
 import com.hostel.management.service.CustomerService;
 import com.hostel.management.service.RoomService;
+import com.hostel.management.service.UtilityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import java.util.HashMap;
-import java.util.Map;
+
 import javax.servlet.http.HttpSession;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/admin")
@@ -27,6 +31,9 @@ public class AdminController {
 
     @Autowired
     private CustomerService customerService;
+
+    @Autowired
+    private UtilityService utilityService;
 
     @GetMapping("/dashboard")
     public String dashboard(HttpSession session, Model model) {
@@ -144,8 +151,6 @@ public class AdminController {
         return "admin/reports";
     }
 
-    // Thêm các phương thức sau vào AdminController
-
     @GetMapping("/utility-readings")
     public String showUtilityReadingsForm(HttpSession session, Model model) {
         // Kiểm tra quyền admin
@@ -164,14 +169,23 @@ public class AdminController {
     @GetMapping("/utility-readings/previous/{roomId}")
     @ResponseBody
     public Map<String, Object> getPreviousReadings(@PathVariable int roomId) {
-        // Giả sử có phương thức lấy chỉ số điện nước cuối cùng của phòng
-        // double previousElectric = utilityService.getLastElectricReading(roomId);
-        // double previousWater = utilityService.getLastWaterReading(roomId);
-
-        // Giả lập dữ liệu cho ví dụ
         Map<String, Object> response = new HashMap<>();
-        response.put("electric", 100.5);
-        response.put("water", 50.2);
+
+        try {
+            UtilityReading lastReading = utilityService.getLastReading(roomId);
+
+            if (lastReading != null) {
+                response.put("electric", lastReading.getElectricReading());
+                response.put("water", lastReading.getWaterReading());
+            } else {
+                // Nếu không có chỉ số cũ, trả về 0
+                response.put("electric", 0);
+                response.put("water", 0);
+            }
+        } catch (Exception e) {
+            // Xử lý lỗi
+            response.put("error", e.getMessage());
+        }
 
         return response;
     }
@@ -189,10 +203,39 @@ public class AdminController {
             return "redirect:/login";
         }
 
-        // Xử lý lưu chỉ số điện nước
-        // utilityService.saveReadings(roomId, readingDate, electricReading, waterReading);
+        try {
+            // Lấy thông tin phòng
+            Room room = roomService.getRoomById(roomId);
+            if (room == null) {
+                throw new RuntimeException("Phòng không tồn tại");
+            }
 
-        // Chuyển hướng đến trang hóa đơn hoặc thông báo thành công
-        return "redirect:/admin/dashboard?success=utility_readings_saved";
+            // Lấy chỉ số cũ từ database
+            UtilityReading lastReading = utilityService.getLastReading(roomId);
+            double previousElectric = lastReading != null ? lastReading.getElectricReading() : 0;
+            double previousWater = lastReading != null ? lastReading.getWaterReading() : 0;
+
+            // Chuyển đổi chuỗi readingDate thành đối tượng Date
+            Date readingDateObj = java.sql.Date.valueOf(readingDate);
+
+            // Lưu chỉ số mới và tính toán hóa đơn
+            UtilityReading newReading = utilityService.saveReading(roomId, readingDateObj, electricReading, waterReading);
+
+            // Chuyển dữ liệu vào model để hiển thị trang thành công
+            model.addAttribute("room", room);
+            model.addAttribute("readingDate", readingDateObj);
+            model.addAttribute("previousElectric", previousElectric);
+            model.addAttribute("previousWater", previousWater);
+            model.addAttribute("electricReading", electricReading);
+            model.addAttribute("waterReading", waterReading);
+            model.addAttribute("electricTotal", newReading.getElectricTotal());
+            model.addAttribute("waterTotal", newReading.getWaterTotal());
+            model.addAttribute("invoiceId", newReading.getId());
+
+            return "admin/utility-readings-success";
+        } catch (Exception e) {
+            // Xử lý lỗi
+            return "redirect:/admin/utility-readings?error=" + e.getMessage();
+        }
     }
 }

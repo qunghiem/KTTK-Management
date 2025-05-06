@@ -188,11 +188,11 @@
         <div class="previous-readings">
             <div class="prev-reading">
                 <div class="prev-reading-label">Chỉ Số Điện Cũ</div>
-                <div class="prev-reading-value" th:text="${previousElectric != null ? previousElectric : '0'}">0</div>
+                <div class="prev-reading-value" id="prev-electric">0 kWh</div>
             </div>
             <div class="prev-reading">
                 <div class="prev-reading-label">Chỉ Số Nước Cũ</div>
-                <div class="prev-reading-value" th:text="${previousWater != null ? previousWater : '0'}">0</div>
+                <div class="prev-reading-value" id="prev-water">0 m³</div>
             </div>
         </div>
 
@@ -239,8 +239,8 @@
             fetch(`/admin/utility-readings/previous/${roomId}`)
                 .then(response => response.json())
                 .then(data => {
-                    document.querySelector('.prev-reading-value:first-child').textContent = data.electric;
-                    document.querySelector('.prev-reading-value:last-child').textContent = data.water;
+                    document.getElementById('prev-electric').textContent = data.electric + ' kWh';
+                    document.getElementById('prev-water').textContent = data.water + ' m³';
                 })
                 .catch(error => console.error('Error fetching previous readings:', error));
         }
