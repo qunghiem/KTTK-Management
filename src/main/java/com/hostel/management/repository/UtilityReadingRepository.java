@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
 
 @Repository
@@ -16,4 +17,7 @@ public interface UtilityReadingRepository extends JpaRepository<UtilityReading, 
 
     @Query("SELECT u FROM UtilityReading u WHERE u.room.id = :roomId ORDER BY u.readingDate DESC")
     List<UtilityReading> findLatestByRoomId(@Param("roomId") int roomId);
+
+    // Thêm phương thức mới
+    List<UtilityReading> findByRoomAndReadingDateBetween(Room room, Date startDate, Date endDate);
 }
