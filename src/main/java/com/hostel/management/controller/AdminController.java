@@ -274,7 +274,6 @@ public class AdminController {
             return "redirect:/login";
         }
 
-        // Thiết lập giá trị mặc định nếu không có tham số
         // Thiết lập giá trị mặc định là tháng hiện tại
         if (startDate == null) {
             // Lấy ngày đầu tiên của tháng hiện tại

@@ -322,14 +322,14 @@
                     <div class="date-group">
                         <span class="date-label">Thời gian bắt đầu:</span>
                         <div class="date-input">
-                            <input type="date" name="startDate" th:value="${startDate != null ? startDate : '2025-01-01'}">
+                            <input type="date" name="startDate" th:value="${startDate}" pattern="yyyy-MM-dd">
                             <i class="far fa-calendar calendar-icon"></i>
                         </div>
                     </div>
                     <div class="date-group">
                         <span class="date-label">Thời gian kết thúc:</span>
                         <div class="date-input">
-                            <input type="date" name="endDate" th:value="${endDate != null ? endDate : '2025-04-30'}">
+                            <input type="date" name="endDate" th:value="${endDate}" pattern="yyyy-MM-dd">
                             <i class="far fa-calendar calendar-icon"></i>
                         </div>
                     </div>
@@ -371,4 +371,19 @@
     </div>
 </div>
 </body>
+
+<script>
+    // Lấy giá trị từ URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const startDate = urlParams.get('startDate');
+    const endDate = urlParams.get('endDate');
+
+    // Gán giá trị cho input
+    if (startDate) {
+        document.querySelector('input[name="startDate"]').value = startDate;
+    }
+    if (endDate) {
+        document.querySelector('input[name="endDate"]').value = endDate;
+    }
+</script>
 </html>
