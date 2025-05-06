@@ -329,16 +329,38 @@ public class AdminController {
 
     // Phương thức tính tổng doanh thu
     private double calculateTotalRevenue(Date startDate, Date endDate) {
-        // Thêm log để debug
-        List<Payment> payments = paymentRepository.findByPaymentDateBetween(startDate, endDate);
-        System.out.println("Found " + payments.size() + " payments in range");
+        try {
+            // Điều chỉnh endDate để bao gồm cả ngày cuối cùng
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(endDate);
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
+            calendar.add(Calendar.MILLISECOND, -1);
+            Date adjustedEndDate = calendar.getTime();
 
-        double total = payments.stream()
-                .mapToDouble(Payment::getAmount)
-                .sum();
+            // In ra để debug
+            System.out.println("Adjusted End Date: " + adjustedEndDate);
 
-        System.out.println("Total revenue: " + total);
-        return total;
+            List<Payment> payments = paymentRepository.findByPaymentDateBetween(startDate, adjustedEndDate);
+            System.out.println("Found " + payments.size() + " payments in range");
+
+            // In thông tin chi tiết các payment để debug
+            for (Payment payment : payments) {
+                System.out.println("Payment ID: " + payment.getId() +
+                        ", Date: " + payment.getPaymentDate() +
+                        ", Amount: " + payment.getAmount());
+            }
+
+            double total = payments.stream()
+                    .mapToDouble(Payment::getAmount)
+                    .sum();
+
+            System.out.println("Total revenue: " + total);
+            return total;
+        } catch (Exception e) {
+            System.err.println("Error calculating total revenue: " + e.getMessage());
+            e.printStackTrace();
+            return 0.0;
+        }
     }
 
     // Phương thức tính doanh thu theo từng phòng
@@ -367,31 +389,55 @@ public class AdminController {
 
     // Phương thức tính doanh thu cho một phòng cụ thể
     private double calculateRoomRevenue(Room room, Date startDate, Date endDate) {
-        // Lấy tất cả booking của phòng trong khoảng thời gian
-        List<Booking> bookings = bookingRepository.findByRoomIdAndStartDateBetween(room, startDate, endDate);
+        try {
+            // Điều chỉnh endDate để bao gồm cả ngày cuối cùng
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(endDate);
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
+            calendar.add(Calendar.MILLISECOND, -1);
+            Date adjustedEndDate = calendar.getTime();
 
-        // Tính tổng doanh thu từ các booking
-        double bookingRevenue = 0.0;
-        for (Booking booking : bookings) {
-            // Tìm các khoản thanh toán liên quan đến booking này
-            Payment payment = paymentRepository.findByBookingId(booking.getId());
+            // Lấy tất cả booking của phòng trong khoảng thời gian
+            List<Booking> bookings = bookingRepository.findByRoomIdAndStartDateBetween(room, startDate, adjustedEndDate);
+            System.out.println("Room " + room.getId() + " - Found " + bookings.size() + " bookings");
 
-            // Cộng dồn vào tổng doanh thu nếu có thanh toán
-            if (payment != null) {
-                bookingRevenue += payment.getAmount();
+            // Tính tổng doanh thu từ các booking
+            double bookingRevenue = 0.0;
+            for (Booking booking : bookings) {
+                // Tìm các khoản thanh toán liên quan đến booking này
+                Payment payment = paymentRepository.findByBookingId(booking.getId());
+
+                // Cộng dồn vào tổng doanh thu nếu có thanh toán
+                if (payment != null) {
+                    bookingRevenue += payment.getAmount();
+                    System.out.println("- Booking " + booking.getId() + ": " + payment.getAmount());
+                }
             }
+
+            // Lấy tất cả hóa đơn tiện ích của phòng trong khoảng thời gian
+            List<UtilityReading> utilityReadings = utilityReadingRepository.findByRoomAndReadingDateBetween(room, startDate, adjustedEndDate);
+            System.out.println("Room " + room.getId() + " - Found " + utilityReadings.size() + " utility readings");
+
+            // Tính tổng tiền tiện ích
+            double utilityRevenue = utilityReadings.stream()
+                    .mapToDouble(ur -> ur.getElectricTotal() + ur.getWaterTotal())
+                    .sum();
+
+            if (utilityRevenue > 0) {
+                System.out.println("- Utility revenue: " + utilityRevenue);
+            }
+
+            // Tổng doanh thu của phòng = doanh thu từ booking + doanh thu từ tiện ích
+            double totalRevenue = bookingRevenue + utilityRevenue;
+            if (totalRevenue > 0) {
+                System.out.println("Room " + room.getId() + " - Total revenue: " + totalRevenue);
+            }
+            return totalRevenue;
+        } catch (Exception e) {
+            System.err.println("Error calculating room revenue for room " + room.getId() + ": " + e.getMessage());
+            e.printStackTrace();
+            return 0.0;
         }
-
-        // Lấy tất cả hóa đơn tiện ích của phòng trong khoảng thời gian
-        List<UtilityReading> utilityReadings = utilityReadingRepository.findByRoomAndReadingDateBetween(room, startDate, endDate);
-
-        // Tính tổng tiền tiện ích
-        double utilityRevenue = utilityReadings.stream()
-                .mapToDouble(ur -> ur.getElectricTotal() + ur.getWaterTotal())
-                .sum();
-
-        // Tổng doanh thu của phòng = doanh thu từ booking + doanh thu từ tiện ích
-        return bookingRevenue + utilityRevenue;
     }
 
 }
