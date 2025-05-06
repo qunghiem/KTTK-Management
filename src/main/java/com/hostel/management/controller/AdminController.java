@@ -288,12 +288,25 @@ public class AdminController {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
             endDate = dateFormat.format(new Date());
         }
+        // Thêm debug info để xem thông tin đầu vào
+        System.out.println("Start Date: " + startDate);
+        System.out.println("End Date: " + endDate);
 
         try {
             // Chuyển chuỗi ngày thành đối tượng Date
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
             Date startDateObj = dateFormat.parse(startDate);
             Date endDateObj = dateFormat.parse(endDate);
+
+            // In thông tin sau khi parse để kiểm tra
+            System.out.println("Parsed Start Date: " + startDateObj);
+            System.out.println("Parsed End Date: " + endDateObj);
+
+            // Đảm bảo endDate không sớm hơn startDate
+            if (endDateObj.before(startDateObj)) {
+                model.addAttribute("error", "Ngày kết thúc không thể sớm hơn ngày bắt đầu");
+                return "admin/reports";
+            }
 
             // Tính tổng doanh thu và doanh thu theo phòng từ database
             double totalRevenue = calculateTotalRevenue(startDateObj, endDateObj);
@@ -316,13 +329,16 @@ public class AdminController {
 
     // Phương thức tính tổng doanh thu
     private double calculateTotalRevenue(Date startDate, Date endDate) {
-        // Sử dụng repository để truy vấn dữ liệu từ database
-        // Ví dụ: Tính tổng của tất cả các khoản thanh toán trong khoảng thời gian
+        // Thêm log để debug
         List<Payment> payments = paymentRepository.findByPaymentDateBetween(startDate, endDate);
+        System.out.println("Found " + payments.size() + " payments in range");
 
-        return payments.stream()
+        double total = payments.stream()
                 .mapToDouble(Payment::getAmount)
                 .sum();
+
+        System.out.println("Total revenue: " + total);
+        return total;
     }
 
     // Phương thức tính doanh thu theo từng phòng
