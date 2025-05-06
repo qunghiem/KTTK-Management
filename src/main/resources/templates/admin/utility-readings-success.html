@@ -16,10 +16,108 @@
 
         body {
             background-color: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header Style */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #27a0dd;
+            color: white;
+            padding: 15px 20px;
+            font-size: 20px;
+            width: 100%;
+        }
+
+        .app-title {
+            display: flex;
+            align-items: center;
+        }
+
+        .app-title i {
+            margin-right: 10px;
+        }
+
+        /* Menu chính trong header */
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-menu li {
+            margin: 0 15px;
+        }
+
+        .nav-menu li a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+
+        .nav-menu li a:hover {
+            color: #f0f0f0;
+            opacity: 0.8;
+        }
+
+        .nav-menu li a i {
+            margin-right: 5px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #ffffff;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #27a0dd;
+            font-size: 18px;
+        }
+
+        .logout-btn {
+            margin-left: 15px;
+            padding: 5px 10px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .logout-btn i {
+            margin-right: 5px;
+        }
+
+        /* Main Content */
+        .main-content {
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
+            flex-grow: 1;
+            padding: 30px 0;
         }
 
         .container {
@@ -129,61 +227,110 @@
         .btn-secondary:hover {
             background-color: #8a8a8a;
         }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .nav-menu {
+                margin: 10px 0;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .nav-menu li {
+                margin: 5px 10px;
+            }
+
+            .container {
+                width: 90%;
+                max-width: 400px;
+            }
+
+            .buttons {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="success-icon">
-        <i class="fas fa-check"></i>
+<!-- Thêm header vào đây -->
+<div class="header">
+    <div class="app-title"><i class="fas fa-home"></i> Quản Lý Nhà Trọ</div>
+
+    <!-- Menu chính -->
+    <ul class="nav-menu">
+        <li><a th:href="@{/admin/dashboard}"><i class="fas fa-home"></i> Trang chủ</a></li>
+        <li><a th:href="@{/admin/rooms/manage}"><i class="fas fa-house-user"></i> Phòng trọ</a></li>
+        <li><a th:href="@{/admin/customers/manage}"><i class="fas fa-user-friends"></i> Khách thuê</a></li>
+        <li><a th:href="@{/admin/invoices}"><i class="fas fa-credit-card"></i> Thanh toán</a></li>
+        <li><a th:href="@{/admin/reports}"><i class="fas fa-chart-bar"></i> Thống kê</a></li>
+    </ul>
+
+    <div class="user-profile">
+        <div class="user-avatar"><i class="fas fa-user"></i></div>
+        <div th:text="${session.user != null ? session.user.username : 'Khách'}">Người dùng</div>
+        <a th:href="@{/logout}" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
     </div>
+</div>
 
-    <h2 class="form-title">Nhập Chỉ Số Thành Công</h2>
-
-    <div class="reading-details">
-        <div class="detail-row">
-            <div class="detail-label">Phòng</div>
-            <div class="detail-value" th:text="${'Phòng ' + room.roomNumber}">Phòng 101</div>
+<!-- Bao toàn bộ nội dung chính trong một div -->
+<div class="main-content">
+    <div class="container">
+        <div class="success-icon">
+            <i class="fas fa-check"></i>
         </div>
 
-        <div class="detail-row">
-            <div class="detail-label">Ngày Ghi Chỉ Số</div>
-            <div class="detail-value" th:text="${#dates.format(readingDate, 'dd/MM/yyyy')}">25/04/2025</div>
+        <h2 class="form-title">Nhập Chỉ Số Thành Công</h2>
+
+        <div class="reading-details">
+            <div class="detail-row">
+                <div class="detail-label">Phòng</div>
+                <div class="detail-value" th:text="${'Phòng ' + room.roomNumber}">Phòng 101</div>
+            </div>
+
+            <div class="detail-row">
+                <div class="detail-label">Ngày Ghi Chỉ Số</div>
+                <div class="detail-value" th:text="${#dates.format(readingDate, 'dd/MM/yyyy')}">25/04/2025</div>
+            </div>
+
+            <div class="detail-row">
+                <div class="detail-label">Chỉ Số Điện Cũ</div>
+                <div class="detail-value" th:text="${previousElectric + ' kWh'}">150 kWh</div>
+            </div>
+
+            <div class="detail-row">
+                <div class="detail-label">Chỉ Số Điện Mới</div>
+                <div class="detail-value" th:text="${electricReading + ' kWh'}">200 kWh</div>
+            </div>
+
+            <div class="detail-row">
+                <div class="detail-label">Chỉ Số Nước Cũ</div>
+                <div class="detail-value" th:text="${previousWater + ' m³'}">50 m³</div>
+            </div>
+
+            <div class="detail-row">
+                <div class="detail-label">Chỉ Số Nước Mới</div>
+                <div class="detail-value" th:text="${waterReading + ' m³'}">70 m³</div>
+            </div>
+
+            <div class="total-row">
+                <div class="total-label">Tổng Tiền Điện</div>
+                <div class="total-value" th:text="${#numbers.formatDecimal(electricTotal, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}">125,000 VNĐ</div>
+            </div>
+
+            <div class="total-row">
+                <div class="total-label">Tổng Tiền Nước</div>
+                <div class="total-value" th:text="${#numbers.formatDecimal(waterTotal, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}">100,000 VNĐ</div>
+            </div>
         </div>
 
-        <div class="detail-row">
-            <div class="detail-label">Chỉ Số Điện Cũ</div>
-            <div class="detail-value" th:text="${previousElectric + ' kWh'}">150 kWh</div>
+        <div class="buttons">
+            <a th:href="@{/admin/invoices/{id}(id=${invoiceId})}" class="btn btn-primary">Xem Chi Tiết Hóa Đơn</a>
+            <a th:href="@{/admin/dashboard}" class="btn btn-secondary">Quay Lại</a>
         </div>
-
-        <div class="detail-row">
-            <div class="detail-label">Chỉ Số Điện Mới</div>
-            <div class="detail-value" th:text="${electricReading + ' kWh'}">200 kWh</div>
-        </div>
-
-        <div class="detail-row">
-            <div class="detail-label">Chỉ Số Nước Cũ</div>
-            <div class="detail-value" th:text="${previousWater + ' m³'}">50 m³</div>
-        </div>
-
-        <div class="detail-row">
-            <div class="detail-label">Chỉ Số Nước Mới</div>
-            <div class="detail-value" th:text="${waterReading + ' m³'}">70 m³</div>
-        </div>
-
-        <div class="total-row">
-            <div class="total-label">Tổng Tiền Điện</div>
-            <div class="total-value" th:text="${#numbers.formatDecimal(electricTotal, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}">125,000 VNĐ</div>
-        </div>
-
-        <div class="total-row">
-            <div class="total-label">Tổng Tiền Nước</div>
-            <div class="total-value" th:text="${#numbers.formatDecimal(waterTotal, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}">100,000 VNĐ</div>
-        </div>
-    </div>
-
-    <div class="buttons">
-        <a th:href="@{/admin/invoices/{id}(id=${invoiceId})}" class="btn btn-primary">Xem Chi Tiết Hóa Đơn</a>
-        <a th:href="@{/admin/dashboard}" class="btn btn-secondary">Quay Lại</a>
     </div>
 </div>
 </body>
