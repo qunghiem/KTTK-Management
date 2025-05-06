@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhập Chỉ Số Điện Nước</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 400px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+        }
+
+        .form-title {
+            text-align: center;
+            color: #333;
+            font-size: 20px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: #27a0dd;
+            outline: none;
+        }
+
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%23666' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 12px;
+        }
+
+        .date-input {
+            position: relative;
+        }
+
+        .date-input i {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            pointer-events: none;
+        }
+
+        .previous-readings {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .prev-reading {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            width: 48%;
+        }
+
+        .prev-reading-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .prev-reading-value {
+            font-size: 14px;
+            color: #27a0dd;
+            font-weight: bold;
+        }
+
+        .number-input {
+            position: relative;
+        }
+
+        .number-spinner {
+            position: absolute;
+            right: 0;
+            top: 0;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .number-spinner button {
+            border: none;
+            background-color: #f1f1f1;
+            color: #666;
+            font-size: 12px;
+            cursor: pointer;
+            height: 50%;
+            width: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .number-spinner button:first-child {
+            border-top-right-radius: 4px;
+        }
+
+        .number-spinner button:last-child {
+            border-bottom-right-radius: 4px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #27a0dd;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .submit-btn:hover {
+            background-color: #1b8bbd;
+        }
+
+        .back-btn {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .back-btn:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2 class="form-title">Nhập Chỉ Số Điện Nước</h2>
+
+    <form th:action="@{/admin/utility-readings/save}" method="post">
+        <div class="form-group">
+            <label class="form-label">Chọn Phòng</label>
+            <select class="form-control form-select" name="roomId" required>
+                <option value="" selected disabled>Chọn phòng</option>
+                <option th:each="room : ${rooms}" th:value="${room.id}" th:text="${'Phòng ' + room.roomNumber}">Phòng 101</option>
+            </select>
+        </div>
+
+        <div class="previous-readings">
+            <div class="prev-reading">
+                <div class="prev-reading-label">Chỉ Số Điện Cũ</div>
+                <div class="prev-reading-value" th:text="${previousElectric != null ? previousElectric : '0'}">0</div>
+            </div>
+            <div class="prev-reading">
+                <div class="prev-reading-label">Chỉ Số Nước Cũ</div>
+                <div class="prev-reading-value" th:text="${previousWater != null ? previousWater : '0'}">0</div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Ngày Ghi Chỉ Số</label>
+            <div class="date-input">
+                <input type="date" class="form-control" name="readingDate" required th:value="${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}">
+                <i class="far fa-calendar"></i>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Chỉ Số Điện</label>
+            <input type="number" class="form-control" name="electricReading" required min="0" step="0.01">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Chỉ Số Nước</label>
+            <div class="number-input">
+                <input type="number" class="form-control" name="waterReading" required min="0" step="0.01">
+                <div class="number-spinner">
+                    <button type="button" onclick="incrementValue(this.parentNode.previousElementSibling, 1)"><i class="fas fa-chevron-up"></i></button>
+                    <button type="button" onclick="incrementValue(this.parentNode.previousElementSibling, -1)"><i class="fas fa-chevron-down"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="submit-btn">Lên hóa đơn</button>
+    </form>
+
+    <a th:href="@{/admin/dashboard}" class="back-btn"><i class="fas fa-arrow-left"></i> Quay lại Dashboard</a>
+</div>
+
+<script>
+    function incrementValue(input, increment) {
+        const currentValue = parseFloat(input.value) || 0;
+        input.value = (currentValue + increment).toFixed(2);
+    }
+
+    // Update previous readings when room selection changes
+    document.querySelector('select[name="roomId"]').addEventListener('change', function() {
+        const roomId = this.value;
+        if (roomId) {
+            fetch(`/admin/utility-readings/previous/${roomId}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.querySelector('.prev-reading-value:first-child').textContent = data.electric;
+                    document.querySelector('.prev-reading-value:last-child').textContent = data.water;
+                })
+                .catch(error => console.error('Error fetching previous readings:', error));
+        }
+    });
+</script>
+</body>
+</html>

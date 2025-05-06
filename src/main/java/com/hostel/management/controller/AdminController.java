@@ -10,7 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
+import java.util.HashMap;
+import java.util.Map;
 import javax.servlet.http.HttpSession;
 import java.util.List;
 
@@ -141,5 +142,57 @@ public class AdminController {
         // Thêm dữ liệu cho báo cáo
 
         return "admin/reports";
+    }
+
+    // Thêm các phương thức sau vào AdminController
+
+    @GetMapping("/utility-readings")
+    public String showUtilityReadingsForm(HttpSession session, Model model) {
+        // Kiểm tra quyền admin
+        User user = (User) session.getAttribute("user");
+        if (user == null || !"ADMIN".equals(user.getRole())) {
+            return "redirect:/login";
+        }
+
+        // Lấy danh sách phòng
+        List<Room> rooms = roomService.getAllRooms();
+        model.addAttribute("rooms", rooms);
+
+        return "admin/utility-readings";
+    }
+
+    @GetMapping("/utility-readings/previous/{roomId}")
+    @ResponseBody
+    public Map<String, Object> getPreviousReadings(@PathVariable int roomId) {
+        // Giả sử có phương thức lấy chỉ số điện nước cuối cùng của phòng
+        // double previousElectric = utilityService.getLastElectricReading(roomId);
+        // double previousWater = utilityService.getLastWaterReading(roomId);
+
+        // Giả lập dữ liệu cho ví dụ
+        Map<String, Object> response = new HashMap<>();
+        response.put("electric", 100.5);
+        response.put("water", 50.2);
+
+        return response;
+    }
+
+    @PostMapping("/utility-readings/save")
+    public String saveUtilityReadings(@RequestParam int roomId,
+                                      @RequestParam String readingDate,
+                                      @RequestParam double electricReading,
+                                      @RequestParam double waterReading,
+                                      HttpSession session,
+                                      Model model) {
+        // Kiểm tra quyền admin
+        User user = (User) session.getAttribute("user");
+        if (user == null || !"ADMIN".equals(user.getRole())) {
+            return "redirect:/login";
+        }
+
+        // Xử lý lưu chỉ số điện nước
+        // utilityService.saveReadings(roomId, readingDate, electricReading, waterReading);
+
+        // Chuyển hướng đến trang hóa đơn hoặc thông báo thành công
+        return "redirect:/admin/dashboard?success=utility_readings_saved";
     }
 }
