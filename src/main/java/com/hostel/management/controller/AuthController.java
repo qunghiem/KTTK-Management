@@ -153,6 +153,7 @@ public class AuthController {
         return "auth/verify-account";
     }
 
+
     @PostMapping("/login-process")
     public String processLogin(@RequestParam String username,
                                @RequestParam String password,
@@ -167,10 +168,15 @@ public class AuthController {
             System.out.println("Authentication successful for: " + user.getUsername());
             session.setAttribute("user", user);
 
-            if (redirect != null && !redirect.isEmpty()) {
-                return "redirect:" + redirect;
+            // Kiểm tra role và điều hướng tương ứng
+            if ("ADMIN".equals(user.getRole())) {
+                return "redirect:/admin/dashboard";
+            } else {
+                if (redirect != null && !redirect.isEmpty()) {
+                    return "redirect:" + redirect;
+                }
+                return "redirect:/home";
             }
-            return "redirect:/home";
         } else {
             System.out.println("Authentication failed for: " + username);
             return "redirect:/login?error=invalid";

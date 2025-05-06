@@ -32,6 +32,18 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println("Mật khẩu đã mã hóa: " + testUser.getPassword());
         }
 
+        // Thêm tài khoản admin nếu chưa có
+        if (!userRepository.existsByUsername("admin")) {
+            User adminUser = new User();
+            adminUser.setUsername("admin");
+            adminUser.setPassword(passwordEncoder.encode("admin123"));
+            adminUser.setEmail("admin@example.com");
+            adminUser.setRole("ADMIN");
+            userRepository.save(adminUser);
+            System.out.println("Đã tạo tài khoản admin với mật khẩu: admin123");
+            System.out.println("Mật khẩu đã mã hóa của admin: " + adminUser.getPassword());
+        }
+
         // Cho phép bạn xem các tài khoản hiện có
         System.out.println("Danh sách tài khoản hiện có:");
         userRepository.findAll().forEach(user -> {

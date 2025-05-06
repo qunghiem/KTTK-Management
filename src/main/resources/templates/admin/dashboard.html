@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Nhà Trọ</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #27a0dd;
+            color: white;
+            padding: 15px 20px;
+            font-size: 20px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #ffffff;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #27a0dd;
+            font-size: 18px;
+        }
+
+        .logout-btn {
+            margin-left: 15px;
+            padding: 5px 10px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .logout-btn i {
+            margin-right: 5px;
+        }
+
+        .dashboard {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            width: calc(33.333% - 14px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
+            min-height: 130px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #27a0dd;
+            font-size: 24px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .card-value {
+            font-size: 14px;
+            color: #777;
+            font-weight: bold;
+        }
+
+        .menu {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .menu-item {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            width: calc(25% - 15px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .menu-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            background-color: #f0f9ff;
+        }
+
+        .menu-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #27a0dd;
+            font-size: 20px;
+        }
+
+        .menu-title {
+            font-size: 14px;
+            color: #333;
+        }
+
+        .menu-item.logout {
+            background-color: #ffefef;
+        }
+
+        .menu-item.logout .menu-icon {
+            color: #e74c3c;
+        }
+
+        .menu-item.logout:hover {
+            background-color: #ffe0e0;
+        }
+
+        @media (max-width: 768px) {
+            .card, .menu-item {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <div class="app-title"><i class="fas fa-home"></i> Quản Lý Nhà Trọ</div>
+    <div class="user-profile">
+        <div class="user-avatar"><i class="fas fa-user"></i></div>
+        <div th:text="${session.user != null ? session.user.username : 'Khách'}">Người dùng</div>
+        <!-- Thêm nút đăng xuất trong header -->
+        <a th:href="@{/logout}" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+    </div>
+</div>
+
+<div class="dashboard">
+    <div class="card">
+        <div class="card-icon"><i class="fas fa-door-closed"></i></div>
+        <div class="card-title">Tổng Phòng</div>
+        <div class="card-value" th:text="${totalRooms + ' Phòng'}">0 Phòng</div>
+    </div>
+
+    <div class="card">
+        <div class="card-icon"><i class="fas fa-users"></i></div>
+        <div class="card-title">Khách Thuê</div>
+        <div class="card-value" th:text="${totalCustomers + ' Người'}">0 Người</div>
+    </div>
+
+    <div class="card">
+        <div class="card-icon"><i class="fas fa-coins"></i></div>
+        <div class="card-title">Doanh Thu</div>
+        <div class="card-value" th:text="${#numbers.formatDecimal(totalRevenue, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}">0 VNĐ</div>
+    </div>
+
+    <div class="card">
+        <div class="card-icon"><i class="fas fa-file-invoice"></i></div>
+        <div class="card-title">Hóa Đơn Chưa Thanh Toán</div>
+        <div class="card-value" th:text="${unpaidInvoices + ' Hóa Đơn'}">0 Hóa Đơn</div>
+    </div>
+</div>
+
+<div class="menu">
+    <a th:href="@{/admin/utility-readings}" class="menu-item">
+        <div class="menu-icon"><i class="fas fa-tachometer-alt"></i></div>
+        <div class="menu-title">Nhập Chỉ Số Điện Nước</div>
+    </a>
+
+    <a th:href="@{/admin/rooms/manage}" class="menu-item">
+        <div class="menu-icon"><i class="fas fa-house-user"></i></div>
+        <div class="menu-title">Quản Lý Phòng</div>
+    </a>
+
+    <a th:href="@{/admin/invoices}" class="menu-item">
+        <div class="menu-icon"><i class="fas fa-receipt"></i></div>
+        <div class="menu-title">Hóa Đơn</div>
+    </a>
+
+    <a th:href="@{/admin/customers/manage}" class="menu-item">
+        <div class="menu-icon"><i class="fas fa-user-friends"></i></div>
+        <div class="menu-title">Khách Thuê</div>
+    </a>
+
+    <a th:href="@{/admin/reports}" class="menu-item">
+        <div class="menu-icon"><i class="fas fa-chart-bar"></i></div>
+        <div class="menu-title">Báo Cáo</div>
+    </a>
+
+    <a th:href="@{/admin/settings}" class="menu-item">
+        <div class="menu-icon"><i class="fas fa-cog"></i></div>
+        <div class="menu-title">Cài Đặt</div>
+    </a>
+
+    <!-- Thêm nút đăng xuất vào menu -->
+    <a th:href="@{/logout}" class="menu-item logout">
+        <div class="menu-icon"><i class="fas fa-sign-out-alt"></i></div>
+        <div class="menu-title">Đăng Xuất</div>
+    </a>
+</div>
+
+</body>
+</html>
