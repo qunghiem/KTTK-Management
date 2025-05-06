@@ -363,7 +363,7 @@
             </tr>
             </thead>
             <tbody>
-            <tr th:each="revenue : ${roomRevenues}">
+            <tr th:each="revenue : ${roomRevenues}" th:onclick="'window.location.href=\'/admin/rooms/revenue/' + ${revenue.room.id} + '\''" style="cursor: pointer;">
                 <td th:text="${'P' + #strings.substring('000' + revenue.room.id, #strings.length('000' + revenue.room.id) - 3)}">P001</td>
                 <td th:text="${'Phòng ' + revenue.room.roomNumber}">Phòng 101</td>
                 <td th:text="${revenue.room.roomType != null ? revenue.room.roomType.name : 'Studio tiêu chuẩn'}">Studio cao cấp</td>

@@ -454,4 +454,164 @@ public class AdminController {
         }
     }
 
+    @GetMapping("/rooms/revenue/{roomId}")
+    public String showRoomRevenueDetail(@PathVariable int roomId,
+                                        @RequestParam(required = false) String startDate,
+                                        @RequestParam(required = false) String endDate,
+                                        HttpSession session,
+                                        Model model) {
+        // Kiểm tra quyền admin
+        User user = (User) session.getAttribute("user");
+        if (user == null || !"ADMIN".equals(user.getRole())) {
+            return "redirect:/login";
+        }
+
+        // Lấy thông tin phòng
+        Room room = roomService.getRoomById(roomId);
+        if (room == null) {
+            return "redirect:/admin/reports?error=room_not_found";
+        }
+
+        try {
+            // Xử lý startDate và endDate tương tự như trong showReports
+            if (startDate == null) {
+                Calendar cal = Calendar.getInstance();
+                cal.set(Calendar.DAY_OF_MONTH, 1);
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                startDate = dateFormat.format(cal.getTime());
+            }
+
+            if (endDate == null) {
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                endDate = dateFormat.format(new Date());
+            }
+
+            // Chuyển chuỗi ngày thành đối tượng Date
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            Date startDateObj = dateFormat.parse(startDate);
+            Date endDateObj = dateFormat.parse(endDate);
+
+            // Lấy chi tiết doanh thu của phòng
+            List<Map<String, Object>> revenueDetails = getRoomRevenueDetails(room, startDateObj, endDateObj);
+
+            // Tính tổng doanh thu
+            double totalRevenue = revenueDetails.stream()
+                    .mapToDouble(detail -> (double) detail.get("totalAmount"))
+                    .sum();
+
+            // Truyền dữ liệu vào model
+            model.addAttribute("room", room);
+            model.addAttribute("startDate", startDate);
+            model.addAttribute("endDate", endDate);
+            model.addAttribute("revenueDetails", revenueDetails);
+            model.addAttribute("totalRevenue", totalRevenue);
+
+            return "admin/room-revenue-detail";
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("error", "Có lỗi xảy ra khi tải dữ liệu: " + e.getMessage());
+            return "redirect:/admin/reports";
+        }
+    }
+
+    // Phương thức lấy chi tiết doanh thu theo phòng và thời gian
+    private List<Map<String, Object>> getRoomRevenueDetails(Room room, Date startDate, Date endDate) {
+        List<Map<String, Object>> results = new ArrayList<>();
+
+        // Điều chỉnh endDate
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(endDate);
+        calendar.add(Calendar.DAY_OF_MONTH, 1);
+        calendar.add(Calendar.MILLISECOND, -1);
+        Date adjustedEndDate = calendar.getTime();
+
+        try {
+            // Lấy danh sách booking
+            List<Booking> bookings = bookingRepository.findByRoomIdAndStartDateBetween(room, startDate, adjustedEndDate);
+
+            // Lấy danh sách tiện ích
+            List<UtilityReading> utilities = utilityReadingRepository.findByRoomAndReadingDateBetween(room, startDate, adjustedEndDate);
+
+            // Tạo map để lưu trữ dữ liệu theo tháng/năm
+            Map<String, Map<String, Object>> monthlyData = new HashMap<>();
+
+            // Xử lý dữ liệu booking
+            for (Booking booking : bookings) {
+                Payment payment = paymentRepository.findByBookingId(booking.getId());
+                if (payment != null) {
+                    Calendar cal = Calendar.getInstance();
+                    cal.setTime(booking.getStartDate());
+                    String monthYear = (cal.get(Calendar.MONTH) + 1) + "/" + cal.get(Calendar.YEAR);
+
+                    // Tạo hoặc cập nhật dữ liệu tháng
+                    if (!monthlyData.containsKey(monthYear)) {
+                        Map<String, Object> detail = new HashMap<>();
+                        detail.put("monthYear", monthYear);
+                        detail.put("tenantName", booking.getCustomerId().getFullName());
+                        detail.put("roomAmount", payment.getAmount());
+                        detail.put("utilityAmount", 0.0);
+                        detail.put("totalAmount", payment.getAmount());
+                        monthlyData.put(monthYear, detail);
+                    } else {
+                        Map<String, Object> detail = monthlyData.get(monthYear);
+                        double currentRoomAmount = (double) detail.get("roomAmount");
+                        detail.put("roomAmount", currentRoomAmount + payment.getAmount());
+
+                        double currentTotal = (double) detail.get("totalAmount");
+                        detail.put("totalAmount", currentTotal + payment.getAmount());
+                    }
+                }
+            }
+
+            // Xử lý dữ liệu tiện ích
+            for (UtilityReading utility : utilities) {
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(utility.getReadingDate());
+                String monthYear = (cal.get(Calendar.MONTH) + 1) + "/" + cal.get(Calendar.YEAR);
+
+                double utilityAmount = utility.getElectricTotal() + utility.getWaterTotal();
+
+                // Cập nhật dữ liệu tháng
+                if (!monthlyData.containsKey(monthYear)) {
+                    Map<String, Object> detail = new HashMap<>();
+                    detail.put("monthYear", monthYear);
+                    detail.put("tenantName", ""); // Không có tên khách hàng từ tiện ích
+                    detail.put("roomAmount", 0.0);
+                    detail.put("utilityAmount", utilityAmount);
+                    detail.put("totalAmount", utilityAmount);
+                    monthlyData.put(monthYear, detail);
+                } else {
+                    Map<String, Object> detail = monthlyData.get(monthYear);
+                    double currentUtilityAmount = (double) detail.get("utilityAmount");
+                    detail.put("utilityAmount", currentUtilityAmount + utilityAmount);
+
+                    double currentTotal = (double) detail.get("totalAmount");
+                    detail.put("totalAmount", currentTotal + utilityAmount);
+                }
+            }
+
+            // Chuyển map thành list và sắp xếp theo tháng/năm
+            results = new ArrayList<>(monthlyData.values());
+            results.sort((d1, d2) -> {
+                String[] parts1 = ((String) d1.get("monthYear")).split("/");
+                String[] parts2 = ((String) d2.get("monthYear")).split("/");
+
+                int month1 = Integer.parseInt(parts1[0]);
+                int year1 = Integer.parseInt(parts1[1]);
+                int month2 = Integer.parseInt(parts2[0]);
+                int year2 = Integer.parseInt(parts2[1]);
+
+                if (year1 != year2) {
+                    return year1 - year2;
+                }
+                return month1 - month2;
+            });
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return results;
+    }
+
 }
