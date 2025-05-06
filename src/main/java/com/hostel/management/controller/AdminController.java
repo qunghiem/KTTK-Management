@@ -312,6 +312,23 @@ public class AdminController {
             double totalRevenue = calculateTotalRevenue(startDateObj, endDateObj);
             List<RoomRevenue> roomRevenues = calculateRoomRevenues(startDateObj, endDateObj);
 
+//            if (roomRevenues.isEmpty() && totalRevenue > 0) {
+//                // Nếu không có chi tiết nhưng có tổng, đặt tổng về 0
+//                totalRevenue = 0;
+//            } else if (!roomRevenues.isEmpty() && totalRevenue == 0) {
+//                // Nếu có chi tiết nhưng tổng là 0, tính lại tổng từ chi tiết
+//                totalRevenue = roomRevenues.stream()
+//                        .mapToDouble(RoomRevenue::getAmount)
+//                        .sum();
+//            }
+            // Tính tổng doanh thu từ danh sách chi tiết doanh thu theo phòng
+            double totalFromRooms = roomRevenues.stream()
+                    .mapToDouble(RoomRevenue::getAmount)
+                    .sum();
+
+// Luôn sử dụng giá trị được tính từ chi tiết
+            totalRevenue = totalFromRooms;
+
             // Truyền dữ liệu vào model
             model.addAttribute("startDate", startDate);
             model.addAttribute("endDate", endDate);
@@ -337,19 +354,16 @@ public class AdminController {
             calendar.add(Calendar.MILLISECOND, -1);
             Date adjustedEndDate = calendar.getTime();
 
-            // In ra để debug
-            System.out.println("Adjusted End Date: " + adjustedEndDate);
-
+            // Lấy danh sách thanh toán trong khoảng thời gian
             List<Payment> payments = paymentRepository.findByPaymentDateBetween(startDate, adjustedEndDate);
-            System.out.println("Found " + payments.size() + " payments in range");
 
-            // In thông tin chi tiết các payment để debug
-            for (Payment payment : payments) {
-                System.out.println("Payment ID: " + payment.getId() +
-                        ", Date: " + payment.getPaymentDate() +
-                        ", Amount: " + payment.getAmount());
+            // Kiểm tra nếu không có thanh toán nào, trả về 0
+            if (payments == null || payments.isEmpty()) {
+                System.out.println("No payments found in the date range");
+                return 0.0;
             }
 
+            // Tính tổng từ danh sách thanh toán
             double total = payments.stream()
                     .mapToDouble(Payment::getAmount)
                     .sum();
