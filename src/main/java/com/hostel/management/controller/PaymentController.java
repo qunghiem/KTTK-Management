@@ -1,6 +1,7 @@
 package com.hostel.management.controller;
 
 import com.hostel.management.model.Booking;
+import com.hostel.management.model.Room;
 import com.hostel.management.model.Customer;
 import com.hostel.management.model.Payment;
 import com.hostel.management.model.User;
@@ -164,7 +165,14 @@ public class PaymentController {
 
             // Cập nhật trạng thái booking thành "confirmed"
             booking.setStatus("confirmed");
+
+            // Cập nhật trạng thái phòng thành "booked"
+            Room room = booking.getRoomId();
+            room.setStatus("booked");
+
+            // Lưu cập nhật booking (bao gồm cả đối tượng Room đã cập nhật)
             bookingService.updateBooking(booking);
+
 
             // Tạo một Payment mới
             Payment payment = new Payment();

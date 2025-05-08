@@ -113,6 +113,11 @@ public class BookingController {
                 throw new RuntimeException("Không tìm thấy thông tin phòng");
             }
 
+            // Kiểm tra phòng có sẵn không
+            if (!room.getStatus().equals("available")) {
+                throw new RuntimeException("Phòng này đã được đặt, vui lòng chọn phòng khác");
+            }
+
             // Lấy hoặc tạo mới customer
             Customer customer = customerService.getCustomerByUser(user);
             if (customer == null) {

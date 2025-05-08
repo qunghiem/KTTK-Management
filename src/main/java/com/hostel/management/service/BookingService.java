@@ -53,7 +53,7 @@ public class BookingService {
 
         // Cập nhật trạng thái phòng
         Room room = booking.getRoomId();
-        room.setStatus("booked");
+        room.setStatus("booked"); // Đảm bảo sử dụng "booked" thống nhất
         roomRepository.save(room);
 
         return bookingRepository.save(booking);
