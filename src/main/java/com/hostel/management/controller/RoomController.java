@@ -27,11 +27,11 @@ public class RoomController {
 
         List<Room> rooms;
 
-
         // Đảm bảo chỉ lấy phòng có trạng thái "available"
         if (status == null) {
             status = "available";
         }
+
         // Xử lý tham số từ form trang chủ
         Float minPrice = null;
         Float maxPrice = null;

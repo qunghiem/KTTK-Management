@@ -58,85 +58,11 @@ public class AuthController {
         }
     }
 
-    @GetMapping("/register")
-    public String showRegisterForm(@RequestParam(required = false) String redirect, Model model) {
-        model.addAttribute("user", new User());
-        // Lưu đường dẫn redirect (nếu có) để sử dụng sau khi đăng ký
-        if (redirect != null && !redirect.isEmpty()) {
-            model.addAttribute("redirect", redirect);
-        }
-        return "auth/register";
-    }
-
-    @PostMapping("/register")
-    public String register(@Valid @ModelAttribute("user") User user,
-                           BindingResult result,  // BindingResult phải ngay sau @Valid @ModelAttribute
-                           @RequestParam(required = false) String confirmPassword,
-                           @RequestParam(required = false) String redirect,
-                           Model model) {
-        System.out.println("Register attempt - Username: " + user.getUsername() + ", Email: " + user.getEmail());
-
-        if (result.hasErrors()) {
-            System.out.println("Validation errors: " + result.getAllErrors());
-            // Giữ lại đường dẫn redirect nếu có
-            if (redirect != null && !redirect.isEmpty()) {
-                model.addAttribute("redirect", redirect);
-            }
-            return "auth/register";
-        }
-
-        // Kiểm tra mật khẩu xác nhận
-        if (confirmPassword != null && !user.getPassword().equals(confirmPassword)) {
-            model.addAttribute("error", "Mật khẩu xác nhận không khớp");
-            // Giữ lại đường dẫn redirect nếu có
-            if (redirect != null && !redirect.isEmpty()) {
-                model.addAttribute("redirect", redirect);
-            }
-            return "auth/register";
-        }
-
-        try {
-            authService.registerNewUser(user);
-            System.out.println("Registration successful for: " + user.getUsername());
-            model.addAttribute("success", "Đăng ký thành công! Vui lòng đăng nhập.");
-            // Chuyển đường dẫn redirect (nếu có) đến trang đăng nhập
-            if (redirect != null && !redirect.isEmpty()) {
-                model.addAttribute("redirect", redirect);
-            }
-            return "auth/login";
-        } catch (Exception e) {
-            System.out.println("Registration failed: " + e.getMessage());
-            model.addAttribute("error", e.getMessage());
-            // Giữ lại đường dẫn redirect nếu có
-            if (redirect != null && !redirect.isEmpty()) {
-                model.addAttribute("redirect", redirect);
-            }
-            return "auth/register";
-        }
-    }
 
     @GetMapping("/logout")
     public String logout(HttpSession session) {
         session.invalidate();
         return "redirect:/login";
-    }
-
-    @GetMapping("/reset-password")
-    public String showResetPasswordForm() {
-        return "auth/reset-password";
-    }
-
-    @PostMapping("/reset-password")
-    public String resetPassword(@RequestParam String email, Model model) {
-        boolean success = authService.resetPassword(email);
-
-        if (success) {
-            model.addAttribute("success", "Hướng dẫn đặt lại mật khẩu đã được gửi đến email của bạn.");
-        } else {
-            model.addAttribute("error", "Email không tồn tại trong hệ thống.");
-        }
-
-        return "auth/reset-password";
     }
 
     @GetMapping("/verify-account")

@@ -19,14 +19,14 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) {
         // Kiểm tra nếu đã tồn tại tài khoản test
-        if (!userRepository.existsByUsername("levanquan")) {
+        if (!userRepository.existsByUsername("nxquan")) {
             User testUser = new User();
-            testUser.setUsername("levanquan");
-            testUser.setPassword(passwordEncoder.encode("levanquan")); // Mật khẩu mã hóa
-            testUser.setEmail("levanquan@example.com");
+            testUser.setUsername("nxquan");
+            testUser.setPassword(passwordEncoder.encode("nxquan")); // Mật khẩu mã hóa
+            testUser.setEmail("nxquan@example.com");
             testUser.setRole("CUSTOMER");
             userRepository.save(testUser);
-            System.out.println("Đã tạo tài khoản test với mật khẩu: levanquan");
+            System.out.println("Đã tạo tài khoản test với mật khẩu: nxquan");
 
             // In mật khẩu đã mã hóa để tham khảo
             System.out.println("Mật khẩu đã mã hóa: " + testUser.getPassword());
