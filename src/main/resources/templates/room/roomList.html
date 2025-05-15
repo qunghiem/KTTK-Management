@@ -602,11 +602,11 @@
                         <div class="form-group">
                             <select name="district">
                                 <option value="">Tất cả khu vực</option>
-                                <option value="1" th:selected="${param.district == '1'}">Quận 1</option>
-                                <option value="2" th:selected="${param.district == '2'}">Quận 2</option>
-                                <option value="3" th:selected="${param.district == '3'}">Quận 3</option>
-                                <option value="4" th:selected="${param.district == '4'}">Quận 4</option>
-                                <option value="5" th:selected="${param.district == '5'}">Quận 5</option>
+                                <option value="1" th:selected="${param.district != null && param.district[0] == '1'}">Quận 1</option>
+                                <option value="2" th:selected="${param.district != null && param.district[0] == '2'}">Quận 2</option>
+                                <option value="3" th:selected="${param.district != null && param.district[0] == '3'}">Quận 3</option>
+                                <option value="4" th:selected="${param.district != null && param.district[0] == '4'}">Quận 4</option>
+                                <option value="5" th:selected="${param.district != null && param.district[0] == '5'}">Quận 5</option>
                             </select>
                         </div>
                     </div>
@@ -615,9 +615,9 @@
                         <h3>Giá phòng</h3>
                         <div class="form-group">
                             <div class="price-range">
-                                <input type="text" name="minPrice" placeholder="Từ" th:value="${param.minPrice}">
+                                <input type="text" name="minPrice" placeholder="Từ" th:value="${param.minPrice != null ? param.minPrice[0] : ''}">
                                 <span>-</span>
-                                <input type="text" name="maxPrice" placeholder="Đến" th:value="${param.maxPrice}">
+                                <input type="text" name="maxPrice" placeholder="Đến" th:value="${param.maxPrice != null ? param.maxPrice[0] : ''}">
                             </div>
                         </div>
                     </div>
@@ -626,20 +626,19 @@
                         <h3>Loại phòng</h3>
                         <div class="checkbox-group">
                             <label class="checkbox-item">
-                                <input type="checkbox" name="roomType" value="studio" th:checked="${param.roomType == 'studio'}">
+                                <input type="checkbox" name="roomType" value="Phòng Studio cao cấp" th:checked="${param.roomType != null && #arrays.contains(param.roomType, 'Phòng Studio cao cấp')}">
                                 Phòng studio
                             </label>
                             <label class="checkbox-item">
-                                <input type="checkbox" name="roomType" value="1bed" th:checked="${param.roomType == '1bed'}">
+                                <input type="checkbox" name="roomType" value="Phòng 1 ngủ đầy đủ nội thất" th:checked="${param.roomType != null && #arrays.contains(param.roomType, 'Phòng 1 ngủ đầy đủ nội thất')}">
                                 Phòng 1 ngủ
                             </label>
                             <label class="checkbox-item">
-                                <input type="checkbox" name="roomType" value="2beds" th:checked="${param.roomType == '2beds'}">
+                                <input type="checkbox" name="roomType" value="Phòng trọ tiêu chuẩn" th:checked="${param.roomType != null && #arrays.contains(param.roomType, 'Phòng trọ tiêu chuẩn')}">
                                 Phòng tiêu chuẩn
                             </label>
                         </div>
                     </div>
-
 
                     <button type="submit" class="filter-btn">Áp dụng bộ lọc</button>
                     <a th:href="@{/rooms}" class="reset-btn">Đặt lại</a>
