@@ -525,16 +525,14 @@
                     </select>
                 </div>
 
+                <!-- Thay đổi select của mức giá thành hai input riêng biệt -->
                 <div class="form-group">
-                    <label for="price">Mức giá</label>
-                    <select id="price" name="priceRange">
-                        <option value="">Chọn mức giá</option>
-                        <option value="0-2000000">Dưới 2 triệu</option>
-                        <option value="2000000-3000000">2 - 3 triệu</option>
-                        <option value="3000000-5000000">3 - 5 triệu</option>
-                        <option value="5000000-10000000">5 - 10 triệu</option>
-                        <option value="10000000-100000000">Trên 10 triệu</option>
-                    </select>
+                    <label for="minPrice">Giá từ</label>
+                    <input type="number" id="minPrice" name="minPrice" placeholder="Giá tối thiểu">
+                </div>
+                <div class="form-group">
+                    <label for="maxPrice">Đến</label>
+                    <input type="number" id="maxPrice" name="maxPrice" placeholder="Giá tối đa">
                 </div>
 
                 <div class="form-group">

@@ -37,7 +37,14 @@ public class RoomService {
         return roomRepository.findTop4ByStatusOrderByIdDesc("available");
     }
 
-    public List<Room> searchRoomsByHomeFilter(String district, Float minPrice, Float maxPrice, String roomType) {
-        return roomRepository.findByHomeFilter(district, minPrice, maxPrice, roomType);
+    public List<Room> searchRoomsByFilter(String district, Float minPrice, Float maxPrice,
+                                          String roomType, Float area, Integer floor, String status) {
+        // In debug để xác nhận tham số đã được truyền đúng
+        System.out.println("Service search: district=" + district +
+                ", roomType=" + roomType +
+                ", minPrice=" + minPrice +
+                ", maxPrice=" + maxPrice);
+
+        return roomRepository.findByFilter(district, minPrice, maxPrice, roomType, area, floor, status);
     }
 }

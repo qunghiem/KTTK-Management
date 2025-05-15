@@ -238,6 +238,8 @@
             margin-top: 10px;
             cursor: pointer;
             transition: background-color 0.3s;
+            text-align: center;
+            text-decoration: none;
         }
 
         .reset-btn:hover {
@@ -620,17 +622,6 @@
                         </div>
                     </div>
 
-<!--                    <div class="filter-group">-->
-<!--                        <h3>Diện tích</h3>-->
-<!--                        <div class="form-group">-->
-<!--                            <div class="price-range">-->
-<!--                                <input type="text" name="minArea" placeholder="Từ" th:value="${param.minArea}">-->
-<!--                                <span>-</span>-->
-<!--                                <input type="text" name="maxArea" placeholder="Đến" th:value="${param.maxArea}">-->
-<!--                            </div>-->
-<!--                        </div>-->
-<!--                    </div>-->
-
                     <div class="filter-group">
                         <h3>Loại phòng</h3>
                         <div class="checkbox-group">
@@ -646,37 +637,12 @@
                                 <input type="checkbox" name="roomType" value="2beds" th:checked="${param.roomType == '2beds'}">
                                 Phòng tiêu chuẩn
                             </label>
-<!--                            <label class="checkbox-item">-->
-<!--                                <input type="checkbox" name="roomType" value="mini" th:checked="${param.roomType == 'mini'}">-->
-<!--                                Phòng mini-->
-<!--                            </label>-->
                         </div>
                     </div>
 
-<!--                    <div class="filter-group">-->
-<!--                        <h3>Tiện ích</h3>-->
-<!--                        <div class="checkbox-group">-->
-<!--                            <label class="checkbox-item">-->
-<!--                                <input type="checkbox" name="hasAC" value="true" th:checked="${param.hasAC == 'true'}">-->
-<!--                                Điều hòa-->
-<!--                            </label>-->
-<!--                            <label class="checkbox-item">-->
-<!--                                <input type="checkbox" name="hasWifi" value="true" th:checked="${param.hasWifi == 'true'}">-->
-<!--                                Wifi-->
-<!--                            </label>-->
-<!--                            <label class="checkbox-item">-->
-<!--                                <input type="checkbox" name="hasFurniture" value="true" th:checked="${param.hasFurniture == 'true'}">-->
-<!--                                Nội thất-->
-<!--                            </label>-->
-<!--                            <label class="checkbox-item">-->
-<!--                                <input type="checkbox" name="hasParking" value="true" th:checked="${param.hasParking == 'true'}">-->
-<!--                                Chỗ để xe-->
-<!--                            </label>-->
-<!--                        </div>-->
-<!--                    </div>-->
 
                     <button type="submit" class="filter-btn">Áp dụng bộ lọc</button>
-                    <button type="reset" class="reset-btn">Đặt lại</button>
+                    <a th:href="@{/rooms}" class="reset-btn">Đặt lại</a>
                 </form>
             </div>
         </aside>

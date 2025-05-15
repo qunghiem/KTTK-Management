@@ -19,7 +19,8 @@ public class RoomController {
             @RequestParam(required = false) String district,
             @RequestParam(required = false) String priceRange,
             @RequestParam(required = false) String roomType,
-            @RequestParam(required = false) Float price,
+            @RequestParam(required = false) Float minPrice, // Thêm tham số này
+            @RequestParam(required = false) Float maxPrice, // Thêm tham số này
             @RequestParam(required = false) Float area,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) Integer floor,
@@ -32,34 +33,28 @@ public class RoomController {
             status = "available";
         }
 
-        // Xử lý tham số từ form trang chủ
-        Float minPrice = null;
-        Float maxPrice = null;
-
-        if (priceRange != null && !priceRange.isEmpty()) {
+        // Xử lý tham số priceRange nếu có
+        if (priceRange != null && !priceRange.isEmpty() && (minPrice == null || maxPrice == null)) {
             String[] prices = priceRange.split("-");
             if (prices.length == 2) {
                 try {
                     minPrice = Float.parseFloat(prices[0]);
                     maxPrice = Float.parseFloat(prices[1]);
                 } catch (NumberFormatException e) {
-                    // Xử lý lỗi
+                    // Xử lý lỗi - in ra log để debug
+                    System.err.println("Lỗi chuyển đổi priceRange: " + priceRange);
                 }
             }
         }
 
-        // Ưu tiên tìm kiếm từ form trang chủ
-        if (district != null || priceRange != null || roomType != null) {
-            rooms = roomService.searchRoomsByHomeFilter(district, minPrice, maxPrice, roomType);
-        }
-        // Sử dụng tìm kiếm thông thường nếu có tham số
-        else if (price != null || area != null || status != null || floor != null) {
-            rooms = roomService.searchRooms(price, area, status, floor);
-        }
-        // Mặc định hiển thị tất cả phòng có sẵn
-        else {
-            rooms = roomService.getAvailableRooms();
-        }
+        // In thông tin debug
+        System.out.println("Tham số tìm kiếm: district=" + district +
+                ", roomType=" + roomType +
+                ", minPrice=" + minPrice +
+                ", maxPrice=" + maxPrice);
+
+        // Sử dụng một phương thức duy nhất cho tìm kiếm
+        rooms = roomService.searchRoomsByFilter(district, minPrice, maxPrice, roomType, area, floor, status);
 
         model.addAttribute("rooms", rooms);
         return "room/roomList";

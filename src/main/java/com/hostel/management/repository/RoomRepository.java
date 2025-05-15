@@ -31,10 +31,16 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
             "(:district IS NULL OR r.address LIKE %:district%) AND " +
             "(:minPrice IS NULL OR r.price >= :minPrice) AND " +
             "(:maxPrice IS NULL OR r.price <= :maxPrice) AND " +
-            "(:roomType IS NULL OR (r.roomType.name = :roomType))")
-    List<Room> findByHomeFilter(
+            "(:roomType IS NULL OR (r.roomType.name LIKE %:roomType%)) AND " +
+            "(:area IS NULL OR r.area >= :area) AND " +
+            "(:floor IS NULL OR r.floor = :floor) AND " +
+            "(:status IS NULL OR r.status = :status)")
+    List<Room> findByFilter(
             @Param("district") String district,
             @Param("minPrice") Float minPrice,
             @Param("maxPrice") Float maxPrice,
-            @Param("roomType") String roomType);
+            @Param("roomType") String roomType,
+            @Param("area") Float area,
+            @Param("floor") Integer floor,
+            @Param("status") String status);
 }
