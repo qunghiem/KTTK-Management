@@ -27,6 +27,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.hostel.management.model.Invoice;
+import com.hostel.management.service.InvoiceService;
+
 
 @Controller
 @RequestMapping("/admin")
@@ -44,6 +47,8 @@ public class AdminController {
     @Autowired
     private UtilityService utilityService;
 
+    @Autowired
+    private InvoiceService invoiceService;
     // Thêm repository cần thiết
     @Autowired
     private RoomRepository roomRepository;
@@ -211,6 +216,10 @@ public class AdminController {
             // Lưu chỉ số mới và tính toán hóa đơn
             UtilityReading newReading = utilityService.saveReading(roomId, readingDateObj, electricReading, waterReading);
 
+            // Lấy hóa đơn mới được tạo
+
+            Invoice invoice = invoiceService.getInvoiceByUtilityReadingId(newReading.getId());
+
             // Chuyển dữ liệu vào model để hiển thị trang thành công
             model.addAttribute("room", room);
             model.addAttribute("readingDate", readingDateObj);
@@ -220,7 +229,7 @@ public class AdminController {
             model.addAttribute("waterReading", waterReading);
             model.addAttribute("electricTotal", newReading.getElectricTotal());
             model.addAttribute("waterTotal", newReading.getWaterTotal());
-            model.addAttribute("invoiceId", newReading.getId());
+            model.addAttribute("invoiceId", invoice.getId());
 
             return "admin/utility-readings-success";
         } catch (Exception e) {

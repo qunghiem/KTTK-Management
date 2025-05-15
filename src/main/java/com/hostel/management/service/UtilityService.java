@@ -2,10 +2,12 @@ package com.hostel.management.service;
 
 import com.hostel.management.model.Room;
 import com.hostel.management.model.UtilityReading;
+import com.hostel.management.model.Invoice;
 import com.hostel.management.repository.RoomRepository;
 import com.hostel.management.repository.UtilityReadingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -19,6 +21,9 @@ public class UtilityService {
     @Autowired
     private RoomRepository roomRepository;
 
+    @Autowired
+    private InvoiceService invoiceService;
+
     // Constants - có thể đưa vào file cấu hình
     private final double ELECTRIC_PRICE = 3500; // VNĐ/kWh
     private final double WATER_PRICE = 5000; // VNĐ/m³
@@ -28,6 +33,7 @@ public class UtilityService {
         return readings.isEmpty() ? null : readings.get(0);
     }
 
+    @Transactional
     public UtilityReading saveReading(int roomId, Date readingDate, double electricReading, double waterReading) {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new RuntimeException("Phòng không tồn tại"));
@@ -55,6 +61,16 @@ public class UtilityService {
         newReading.setWaterTotal(waterTotal);
         newReading.setBilled(false);
 
-        return utilityReadingRepository.save(newReading);
+        // Lưu chỉ số mới
+        UtilityReading savedReading = utilityReadingRepository.save(newReading);
+
+        // Tạo hóa đơn từ chỉ số mới
+        Invoice invoice = invoiceService.createInvoiceFromUtilityReading(savedReading, previousElectric, previousWater);
+
+        // Đánh dấu là đã lên hóa đơn
+        savedReading.setBilled(true);
+        utilityReadingRepository.save(savedReading);
+
+        return savedReading;
     }
 }

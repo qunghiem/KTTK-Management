@@ -17,6 +17,7 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
 
     List<Booking> findByStatus(String status);
 
-    // Thêm phương thức mới
+    List<Booking> findByRoomIdAndStatus(Room roomId, String status);
+
     List<Booking> findByRoomIdAndStartDateBetween(Room room, Date startDate, Date endDate);
 }
