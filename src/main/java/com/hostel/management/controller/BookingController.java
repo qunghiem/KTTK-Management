@@ -29,7 +29,11 @@ public class BookingController {
     private CustomerService customerService;
 
     @GetMapping("/booking/form/{roomId}")
-    public String getBookingForm(@PathVariable int roomId, Model model, HttpSession session) {
+    public String getBookingForm(@PathVariable int roomId,
+                                 @RequestParam(required = false) String startDate,
+                                 @RequestParam(required = false, defaultValue = "6") int duration,
+                                 @RequestParam(required = false, defaultValue = "2") int numTenants,
+                                 Model model, HttpSession session) {
         // Kiểm tra đăng nhập
         User user = (User) session.getAttribute("user");
         if (user == null) {
@@ -51,10 +55,24 @@ public class BookingController {
         Booking booking = new Booking();
         booking.setRoomId(room);
 
-        // Khởi tạo ngày bắt đầu là ngày mai
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.DAY_OF_MONTH, 1);
-        booking.setStartDate(calendar.getTime());
+        // Nếu có truyền startDate từ trang chi tiết phòng
+        if (startDate != null && !startDate.isEmpty()) {
+            try {
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                Date bookingStartDate = dateFormat.parse(startDate);
+                booking.setStartDate(bookingStartDate);
+            } catch (Exception e) {
+                // Nếu format sai thì khởi tạo ngày mặc định
+                Calendar calendar = Calendar.getInstance();
+                calendar.add(Calendar.DAY_OF_MONTH, 1);
+                booking.setStartDate(calendar.getTime());
+            }
+        } else {
+            // Khởi tạo ngày bắt đầu là ngày mai
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
+            booking.setStartDate(calendar.getTime());
+        }
 
         // Lấy thông tin khách hàng nếu đã có
         Customer customer = customerService.getCustomerByUser(user);
@@ -69,8 +87,8 @@ public class BookingController {
         model.addAttribute("customer", customer);
 
         // Thêm các thuộc tính bổ sung cho form
-        model.addAttribute("duration", 6); // Mặc định 6 tháng
-        model.addAttribute("numTenants", 2); // Mặc định 2 người
+        model.addAttribute("duration", duration);
+        model.addAttribute("numTenants", numTenants);
         model.addAttribute("vehicle", "none"); // Mặc định không có phương tiện
         model.addAttribute("email", user.getEmail()); // Email từ user
 

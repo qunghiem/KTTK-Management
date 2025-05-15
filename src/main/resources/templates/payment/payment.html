@@ -538,8 +538,8 @@
                 <div class="bank-info-item">
                     <div class="bank-info-label">Số tiền:</div>
                     <div class="bank-info-value">
-                        <span th:text="${#numbers.formatDecimal(booking.roomId.price, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}">4,500,000 VNĐ</span>
-                        <button class="copy-btn" th:data-price="${booking.roomId.price}" onclick="copyToClipboard(this.getAttribute('data-price'))">Sao chép</button>
+                        <span th:text="${#numbers.formatDecimal(booking.deposit, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}">4,500,000 VNĐ</span>
+                        <button class="copy-btn" th:data-price="${booking.deposit}" onclick="copyToClipboard(this.getAttribute('data-price'))">Sao chép</button>
                     </div>
                 </div>
                 <div class="bank-info-item">
@@ -568,7 +568,7 @@
                 <div class="step-item">
                     <div class="step-number">3</div>
                     <div class="step-content">
-                        Nhập số tiền <strong th:text="${#numbers.formatDecimal(booking.roomId.price, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}">4,500,000 VNĐ</strong>
+                        Nhập số tiền <strong th:text="${#numbers.formatDecimal(booking.deposit, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}">4,500,000 VNĐ</strong>
                     </div>
                 </div>
                 <div class="step-item">
@@ -587,8 +587,10 @@
 
             <div class="payment-note">
                 <h4>Lưu ý quan trọng:</h4>
+                <p><i class="fas fa-info-circle"></i> <strong>Lưu ý quan trọng:</strong></p>
                 <p>Vui lòng nhập đúng nội dung chuyển khoản để chúng tôi xác nhận thanh toán của bạn nhanh chóng.</p>
-                <p>Tiền cọc sẽ được trừ vào tổng số tiền thuê phòng của bạn.</p>
+                <p>Tiền cọc được tính 30% tháng đầu tiên và sẽ được khấu trừ vào tổng số tiền thuê phòng của bạn.</p>
+                <p>Hãy đảm bảo kiểm tra kỹ thông tin đặt phòng trước khi tiến hành thanh toán.</p>
             </div>
 
             <div class="confirm-section">
@@ -610,7 +612,7 @@
                 <img src="blob:https://www.facebook.com/1f63d2ab-837b-4b0f-b995-78c52e956a97" alt="Mã QR thanh toán">
             </div>
 
-            <div class="payment-total" th:text="${#numbers.formatDecimal(booking.roomId.price, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}">4.500.000 VNĐ</div>
+            <div class="payment-total" th:text="${#numbers.formatDecimal(booking.deposit, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}">4.500.000 VNĐ</div>
 
             <div class="payment-reference">
                 <div class="reference-label">Mã đặt phòng:</div>

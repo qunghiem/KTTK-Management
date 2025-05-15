@@ -575,12 +575,12 @@
                     <span th:text="${#numbers.formatDecimal(booking.roomId.price, 0, 'COMMA', 0, 'POINT') + ' đ/tháng'}">4.500.000 đ/tháng</span>
                 </div>
                 <div class="payment-item">
-                    <span>Số tháng đặt cọc:</span>
-                    <span>1 tháng</span>
+                    <span>Tiền đặt cọc:</span>
+                    <span th:text="${#numbers.formatDecimal(booking.deposit, 0, 'COMMA', 0, 'POINT') + ' đ'}">4.500.000 đ</span>
                 </div>
                 <div class="payment-total">
                     <span>Tổng tiền cọc:</span>
-                    <span th:text="${#numbers.formatDecimal(booking.roomId.price, 0, 'COMMA', 0, 'POINT') + ' đ'}">4.500.000 đ</span>
+                    <span th:text="${#numbers.formatDecimal(booking.roomId.price * 0.3, 0, 'COMMA', 0, 'POINT') + ' đ'}">4.500.000 đ</span>
                 </div>
             </div>
 
