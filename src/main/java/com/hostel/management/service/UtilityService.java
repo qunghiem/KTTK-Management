@@ -47,9 +47,13 @@ public class UtilityService {
         double electricUsage = electricReading - previousElectric;
         double waterUsage = waterReading - previousWater;
 
-        // Tính tổng tiền
-        double electricTotal = electricUsage * ELECTRIC_PRICE;
-        double waterTotal = waterUsage * WATER_PRICE;
+        // Tính chi tiết
+        Map<String, Double> electricDetails = UtilityCalculator.calculateElectricDetails(electricUsage);
+        Map<String, Double> waterDetails = UtilityCalculator.calculateWaterDetails(waterUsage);
+
+        // Lấy tổng từ chi tiết (đảm bảo nhất quán)
+        double electricTotal = electricDetails.get("Tổng cộng");
+        double waterTotal = waterDetails.get("Tổng cộng");
 
         // Tạo đối tượng UtilityReading mới
         UtilityReading newReading = new UtilityReading();
@@ -57,8 +61,8 @@ public class UtilityService {
         newReading.setReadingDate(readingDate);
         newReading.setElectricReading(electricReading);
         newReading.setWaterReading(waterReading);
-        newReading.setElectricTotal(electricTotal);
-        newReading.setWaterTotal(waterTotal);
+        newReading.setElectricTotal(electricTotal); // Sử dụng tổng từ chi tiết
+        newReading.setWaterTotal(waterTotal); // Sử dụng tổng từ chi tiết
         newReading.setBilled(false);
 
         // Lưu chỉ số mới
