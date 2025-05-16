@@ -8,7 +8,8 @@ import com.hostel.management.repository.UtilityReadingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.hostel.management.util.UtilityCalculator;  // Thêm import này
+import java.util.Map;  // Thêm import này
 import java.util.Date;
 import java.util.List;
 
@@ -71,5 +72,14 @@ public class UtilityService {
         utilityReadingRepository.save(savedReading);
 
         return savedReading;
+    }
+
+    // Thêm phương thức để lấy chi tiết tính tiền điện nước
+    public Map<String, Double> getElectricCalculationDetails(double usage) {
+        return UtilityCalculator.calculateElectricDetails(usage);
+    }
+
+    public Map<String, Double> getWaterCalculationDetails(double usage) {
+        return UtilityCalculator.calculateWaterDetails(usage);
     }
 }

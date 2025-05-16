@@ -204,20 +204,27 @@ public class AdminController {
                 throw new RuntimeException("Phòng không tồn tại");
             }
 
-            // Lấy chỉ số cũ từ db
+            // Lấy chỉ số cũ từ database
             UtilityReading lastReading = utilityService.getLastReading(roomId);
             double previousElectric = lastReading != null ? lastReading.getElectricReading() : 0;
             double previousWater = lastReading != null ? lastReading.getWaterReading() : 0;
 
-            // CreadingDate -> Date
+            // Chuyển đổi chuỗi readingDate thành đối tượng Date
             Date readingDateObj = java.sql.Date.valueOf(readingDate);
 
             // Lưu chỉ số mới và tính toán hóa đơn
             UtilityReading newReading = utilityService.saveReading(roomId, readingDateObj, electricReading, waterReading);
 
             // Lấy hóa đơn mới được tạo
+            Invoice invoice = invoiceService.getInvoiceByUtilityReadingId(newReading.getId());
 
-//            Invoice invoice = invoiceService.getInvoiceByUtilityReadingId(newReading.getId());
+            // Tính lượng tiêu thụ
+            double electricUsage = electricReading - previousElectric;
+            double waterUsage = waterReading - previousWater;
+
+            // Lấy chi tiết tính toán điện nước theo bậc thang
+            Map<String, Double> electricDetails = utilityService.getElectricCalculationDetails(electricUsage);
+            Map<String, Double> waterDetails = utilityService.getWaterCalculationDetails(waterUsage);
 
             // Chuyển dữ liệu vào model để hiển thị trang thành công
             model.addAttribute("room", room);
@@ -226,9 +233,13 @@ public class AdminController {
             model.addAttribute("previousWater", previousWater);
             model.addAttribute("electricReading", electricReading);
             model.addAttribute("waterReading", waterReading);
+            model.addAttribute("electricUsage", electricUsage);
+            model.addAttribute("waterUsage", waterUsage);
             model.addAttribute("electricTotal", newReading.getElectricTotal());
             model.addAttribute("waterTotal", newReading.getWaterTotal());
-//            model.addAttribute("invoiceId", invoice.getId());
+            model.addAttribute("electricDetails", electricDetails);
+            model.addAttribute("waterDetails", waterDetails);
+            model.addAttribute("invoiceId", invoice.getId());
 
             return "admin/utility-readings-success";
         } catch (Exception e) {

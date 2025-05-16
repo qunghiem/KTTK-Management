@@ -76,4 +76,8 @@ public class InvoiceService {
 
         return invoiceRepository.save(invoice);
     }
+
+    public Invoice getInvoiceByUtilityReadingId(int utilityReadingId) {
+        return invoiceRepository.findByUtilityReadingId(utilityReadingId);
+    }
 }
