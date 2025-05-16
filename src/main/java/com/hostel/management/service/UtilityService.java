@@ -30,7 +30,18 @@ public class UtilityService {
 
     public UtilityReading getLastReading(int roomId) {
         List<UtilityReading> readings = utilityReadingRepository.findLatestByRoomId(roomId);
-        return readings.isEmpty() ? null : readings.get(0);
+        UtilityReading lastReading = readings.isEmpty() ? null : readings.get(0);
+
+        System.out.println("Lấy chỉ số cũ cho phòng " + roomId + ":");
+        if (lastReading != null) {
+            System.out.println("- Ngày đọc: " + lastReading.getReadingDate());
+            System.out.println("- Chỉ số điện: " + lastReading.getElectricReading());
+            System.out.println("- Chỉ số nước: " + lastReading.getWaterReading());
+        } else {
+            System.out.println("- Không tìm thấy chỉ số cũ");
+        }
+
+        return lastReading;
     }
 
     @Transactional

@@ -15,6 +15,7 @@ public interface UtilityReadingRepository extends JpaRepository<UtilityReading, 
 
     List<UtilityReading> findByRoomOrderByReadingDateDesc(Room room);
 
+    // Đảm bảo sắp xếp theo thứ tự giảm dần của ngày đọc
     @Query("SELECT u FROM UtilityReading u WHERE u.room.id = :roomId ORDER BY u.readingDate DESC")
     List<UtilityReading> findLatestByRoomId(@Param("roomId") int roomId);
 

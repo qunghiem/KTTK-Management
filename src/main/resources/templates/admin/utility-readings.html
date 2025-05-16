@@ -376,6 +376,7 @@
     }
 
     // Update previous readings when room selection changes
+    // Khi chọn phòng, gửi request AJAX để lấy chỉ số cũ
     document.querySelector('select[name="roomId"]').addEventListener('change', function() {
         const roomId = this.value;
         if (roomId) {
