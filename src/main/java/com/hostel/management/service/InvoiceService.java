@@ -76,44 +76,4 @@ public class InvoiceService {
 
         return invoiceRepository.save(invoice);
     }
-
-    public List<Invoice> getAllInvoices() {
-        return invoiceRepository.findAll();
-    }
-
-    public Invoice getInvoiceById(int id) {
-        return invoiceRepository.findById(id).orElse(null);
-    }
-
-    public List<Invoice> getInvoicesByRoom(Room room) {
-        return invoiceRepository.findByRoom(room);
-    }
-
-    public List<Invoice> getInvoicesByCustomer(Customer customer) {
-        return invoiceRepository.findByCustomer(customer);
-    }
-
-    public List<Invoice> getInvoicesByDateRange(Date startDate, Date endDate) {
-        return invoiceRepository.findByCreateDateBetween(startDate, endDate);
-    }
-
-    public List<Invoice> getInvoicesByMonthAndYear(int month, int year) {
-        return invoiceRepository.findByMonthAndYear(month, year);
-    }
-
-    public Invoice updateInvoice(Invoice invoice) {
-        return invoiceRepository.save(invoice);
-    }
-
-    public List<Invoice> getUnpaidInvoices() {
-        return invoiceRepository.findByPaidStatus(false);
-    }
-
-    public Invoice getInvoiceByUtilityReadingId(int utilityReadingId) {
-        return invoiceRepository.findByUtilityReadingId(utilityReadingId);
-    }
-
-    public void deleteInvoice(int id) {
-        invoiceRepository.deleteById(id);
-    }
 }

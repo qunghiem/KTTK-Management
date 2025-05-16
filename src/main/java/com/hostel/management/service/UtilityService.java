@@ -24,7 +24,6 @@ public class UtilityService {
     @Autowired
     private InvoiceService invoiceService;
 
-    // Constants - có thể đưa vào file cấu hình
     private final double ELECTRIC_PRICE = 3500; // VNĐ/kWh
     private final double WATER_PRICE = 5000; // VNĐ/m³
 

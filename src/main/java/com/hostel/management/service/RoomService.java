@@ -30,16 +30,13 @@ public class RoomService {
         return roomRepository.findByStatus("available");
     }
 
-    // Thêm phương thức mới để lấy danh sách phòng nổi bật
+    // lấy danh sách phòng nổi bật
     public List<Room> getFeaturedRooms() {
-        // Lấy 4 phòng có trạng thái "available" mới nhất
-        // Bạn có thể thay đổi logic này tùy theo yêu cầu
         return roomRepository.findTop4ByStatusOrderByIdDesc("available");
     }
 
     public List<Room> searchRoomsByFilter(String district, Float minPrice, Float maxPrice,
                                           String roomType, Float area, Integer floor, String status) {
-        // In debug để xác nhận tham số đã được truyền đúng
         System.out.println("Service search: district=" + district +
                 ", roomType=" + roomType +
                 ", minPrice=" + minPrice +

@@ -142,7 +142,6 @@ public class PaymentController {
 
         // Nếu không có trong session, tìm kiếm theo bookingId
         if (payment == null) {
-            // Giả sử có phương thức getPaymentByBookingId
             payment = paymentService.getPaymentByBookingId(bookingId);
         }
 

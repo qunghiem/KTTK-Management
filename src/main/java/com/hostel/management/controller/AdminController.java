@@ -178,7 +178,6 @@ public class AdminController {
                 response.put("water", 0);
             }
         } catch (Exception e) {
-            // Xử lý lỗi
             response.put("error", e.getMessage());
         }
 
@@ -205,12 +204,12 @@ public class AdminController {
                 throw new RuntimeException("Phòng không tồn tại");
             }
 
-            // Lấy chỉ số cũ từ database
+            // Lấy chỉ số cũ từ db
             UtilityReading lastReading = utilityService.getLastReading(roomId);
             double previousElectric = lastReading != null ? lastReading.getElectricReading() : 0;
             double previousWater = lastReading != null ? lastReading.getWaterReading() : 0;
 
-            // Chuyển đổi chuỗi readingDate thành đối tượng Date
+            // CreadingDate -> Date
             Date readingDateObj = java.sql.Date.valueOf(readingDate);
 
             // Lưu chỉ số mới và tính toán hóa đơn
@@ -218,7 +217,7 @@ public class AdminController {
 
             // Lấy hóa đơn mới được tạo
 
-            Invoice invoice = invoiceService.getInvoiceByUtilityReadingId(newReading.getId());
+//            Invoice invoice = invoiceService.getInvoiceByUtilityReadingId(newReading.getId());
 
             // Chuyển dữ liệu vào model để hiển thị trang thành công
             model.addAttribute("room", room);
@@ -229,7 +228,7 @@ public class AdminController {
             model.addAttribute("waterReading", waterReading);
             model.addAttribute("electricTotal", newReading.getElectricTotal());
             model.addAttribute("waterTotal", newReading.getWaterTotal());
-            model.addAttribute("invoiceId", invoice.getId());
+//            model.addAttribute("invoiceId", invoice.getId());
 
             return "admin/utility-readings-success";
         } catch (Exception e) {

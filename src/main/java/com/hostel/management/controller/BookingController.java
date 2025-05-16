@@ -278,36 +278,36 @@ public class BookingController {
         return "booking/confirmBooking";
     }
 
-    @PostMapping("/booking/confirm/{bookingId}")
-    public String confirmBooking(@PathVariable int bookingId,
-                                 @RequestParam String paymentMethod,
-                                 HttpSession session,
-                                 Model model) {
-        // Kiểm tra đăng nhập
-        User user = (User) session.getAttribute("user");
-        if (user == null) {
-            return "redirect:/login";
-        }
-
-        try {
-            // Xác nhận đặt phòng
-            bookingService.confirmBooking(bookingId);
-
-            // Lưu phương thức thanh toán vào session để sử dụng ở màn hình thanh toán
-            session.setAttribute("paymentMethod", paymentMethod);
-
-            return "redirect:/payment/" + bookingId;
-        } catch (Exception e) {
-            model.addAttribute("error", e.getMessage());
-
-            // Thêm lại thông tin email và CMND khi có lỗi xảy ra
-            model.addAttribute("customerEmail", session.getAttribute("customerEmail"));
-            model.addAttribute("customerIdentityCard", session.getAttribute("customerIdentityCard"));
-
-            model.addAttribute("booking", bookingService.getBookingById(bookingId));
-            return "booking/confirmBooking";
-        }
-    }
+//    @PostMapping("/booking/confirm/{bookingId}")
+//    public String confirmBooking(@PathVariable int bookingId,
+//                                 @RequestParam String paymentMethod,
+//                                 HttpSession session,
+//                                 Model model) {
+//        // Kiểm tra đăng nhập
+//        User user = (User) session.getAttribute("user");
+//        if (user == null) {
+//            return "redirect:/login";
+//        }
+//
+//        try {
+//            // Xác nhận đặt phòng
+//            bookingService.confirmBooking(bookingId);
+//
+//            // Lưu phương thức thanh toán vào session để sử dụng ở màn hình thanh toán
+//            session.setAttribute("paymentMethod", paymentMethod);
+//
+//            return "redirect:/payment/" + bookingId;
+//        } catch (Exception e) {
+//            model.addAttribute("error", e.getMessage());
+//
+//            // Thêm lại thông tin email và CMND khi có lỗi xảy ra
+//            model.addAttribute("customerEmail", session.getAttribute("customerEmail"));
+//            model.addAttribute("customerIdentityCard", session.getAttribute("customerIdentityCard"));
+//
+//            model.addAttribute("booking", bookingService.getBookingById(bookingId));
+//            return "booking/confirmBooking";
+//        }
+//    }
 
     @GetMapping("/booking/cancel/{bookingId}")
     public String cancelBooking(@PathVariable int bookingId, HttpSession session) {
