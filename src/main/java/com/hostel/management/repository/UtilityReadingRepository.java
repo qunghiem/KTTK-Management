@@ -21,4 +21,8 @@ public interface UtilityReadingRepository extends JpaRepository<UtilityReading, 
 
     // Thêm phương thức mới
     List<UtilityReading> findByRoomAndReadingDateBetween(Room room, Date startDate, Date endDate);
+
+    // Thêm phương thức để lấy chỉ số trước một ngày cụ thể
+    @Query("SELECT u FROM UtilityReading u WHERE u.room = :room AND u.readingDate < :beforeDate ORDER BY u.readingDate DESC")
+    List<UtilityReading> findByRoomAndReadingDateBefore(@Param("room") Room room, @Param("beforeDate") Date beforeDate);
 }

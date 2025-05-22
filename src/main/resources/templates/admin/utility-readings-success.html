@@ -284,6 +284,16 @@
             color: #2c3e50;
         }
 
+        .month-year-info {
+            background-color: #e1f5fe;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 500;
+            color: #0277bd;
+        }
+
         @media (max-width: 768px) {
             .header {
                 flex-direction: column;
@@ -312,7 +322,7 @@
     </style>
 </head>
 <body>
-<!-- Thêm header vào đây -->
+<!-- Header -->
 <div class="header">
     <div class="app-title"><i class="fas fa-home"></i> Quản Lý Nhà Trọ</div>
 
@@ -332,7 +342,7 @@
     </div>
 </div>
 
-<!-- Bao toàn bộ nội dung chính trong một div -->
+<!-- Main Content -->
 <div class="main-content">
     <div class="container">
         <div class="success-icon">
@@ -341,7 +351,11 @@
 
         <h2 class="form-title">Nhập Chỉ Số Thành Công</h2>
 
-        <!-- ... Giữ nguyên phần đầu file ... -->
+        <!-- Thông tin tháng/năm -->
+        <div class="month-year-info">
+            <i class="fas fa-calendar-alt"></i>
+            Hóa đơn tháng <span th:text="${month + '/' + year}">5/2025</span>
+        </div>
 
         <div class="reading-details">
             <div class="detail-row">
@@ -350,8 +364,8 @@
             </div>
 
             <div class="detail-row">
-                <div class="detail-label">Ngày Ghi Chỉ Số</div>
-                <div class="detail-value" th:text="${#dates.format(readingDate, 'dd/MM/yyyy')}">25/04/2025</div>
+                <div class="detail-label">Thời Gian Ghi Chỉ Số</div>
+                <div class="detail-value" th:text="${#dates.format(readingDate, 'dd/MM/yyyy HH:mm:ss')}">25/04/2025 14:30:45</div>
             </div>
 
             <div class="detail-section">
@@ -420,11 +434,9 @@
             </div>
         </div>
 
-        <!-- ... Giữ nguyên phần còn lại của file ... -->
-
         <div class="buttons">
             <a th:href="@{/admin/invoices/{id}(id=${invoiceId})}" class="btn btn-primary">Xem Chi Tiết Hóa Đơn</a>
-            <a th:href="@{/admin/dashboard}" class="btn btn-secondary">Quay Lại</a>
+            <a th:href="@{/admin/utility-readings(month=${month}, year=${year})}" class="btn btn-secondary">Tiếp tục nhập</a>
         </div>
     </div>
 </div>

@@ -27,6 +27,9 @@ public class InvoiceService {
     private final double ELECTRIC_PRICE = 3500; // VNĐ/kWh
     private final double WATER_PRICE = 5000; // VNĐ/m³
 
+    /**
+     * Tạo hóa đơn từ UtilityReading (phương thức cũ, giữ lại để tương thích)
+     */
     public Invoice createInvoiceFromUtilityReading(UtilityReading utilityReading, double previousElectric, double previousWater) {
         Invoice invoice = new Invoice();
         Room room = utilityReading.getRoom();
@@ -47,19 +50,19 @@ public class InvoiceService {
         invoice.setPreviousElectricReading(previousElectric);
         invoice.setElectricUsage(utilityReading.getElectricReading() - previousElectric);
         invoice.setElectricPrice(ELECTRIC_PRICE);
-        invoice.setElectricTotal(invoice.getElectricUsage() * ELECTRIC_PRICE);
+        invoice.setElectricTotal(utilityReading.getElectricTotal()); // Sử dụng tổng đã tính từ UtilityReading
 
         invoice.setWaterReading(utilityReading.getWaterReading());
         invoice.setPreviousWaterReading(previousWater);
         invoice.setWaterUsage(utilityReading.getWaterReading() - previousWater);
         invoice.setWaterPrice(WATER_PRICE);
-        invoice.setWaterTotal(invoice.getWaterUsage() * WATER_PRICE);
+        invoice.setWaterTotal(utilityReading.getWaterTotal()); // Sử dụng tổng đã tính từ UtilityReading
 
         // Thiết lập tiền phòng
         invoice.setRoomCharge(room.getPrice());
 
         // Tính tổng tiền
-        double totalAmount = invoice.getElectricTotal() + invoice.getWaterTotal() + room.getPrice();
+        double totalAmount = utilityReading.getElectricTotal() + utilityReading.getWaterTotal() + room.getPrice();
         invoice.setTotalAmount(totalAmount);
 
         // Thiết lập trạng thái thanh toán mặc định là chưa thanh toán
@@ -77,7 +80,179 @@ public class InvoiceService {
         return invoiceRepository.save(invoice);
     }
 
+    /**
+     * Tạo hóa đơn cho tháng cụ thể từ UtilityReading
+     */
+    public Invoice createInvoiceFromUtilityReadingForMonth(UtilityReading utilityReading, double previousElectric, double previousWater, int month, int year) {
+        Invoice invoice = new Invoice();
+        Room room = utilityReading.getRoom();
+        invoice.setRoom(room);
+
+        // Lấy thông tin khách hàng từ booking hiện tại của phòng (nếu có)
+        List<Booking> activeBookings = bookingRepository.findByRoomIdAndStatus(room, "confirmed");
+        if (!activeBookings.isEmpty()) {
+            Booking activeBooking = activeBookings.get(0);
+            invoice.setCustomer(activeBooking.getCustomerId());
+        }
+
+        // Thiết lập ngày tạo
+        invoice.setCreateDate(new Date());
+
+        // Lưu chỉ số điện nước
+        invoice.setElectricReading(utilityReading.getElectricReading());
+        invoice.setPreviousElectricReading(previousElectric);
+        invoice.setElectricUsage(utilityReading.getElectricReading() - previousElectric);
+        invoice.setElectricPrice(ELECTRIC_PRICE);
+        invoice.setElectricTotal(utilityReading.getElectricTotal()); // Sử dụng tổng đã tính từ UtilityReading
+
+        invoice.setWaterReading(utilityReading.getWaterReading());
+        invoice.setPreviousWaterReading(previousWater);
+        invoice.setWaterUsage(utilityReading.getWaterReading() - previousWater);
+        invoice.setWaterPrice(WATER_PRICE);
+        invoice.setWaterTotal(utilityReading.getWaterTotal()); // Sử dụng tổng đã tính từ UtilityReading
+
+        // Thiết lập tiền phòng
+        invoice.setRoomCharge(room.getPrice());
+
+        // Tính tổng tiền
+        double totalAmount = utilityReading.getElectricTotal() + utilityReading.getWaterTotal() + room.getPrice();
+        invoice.setTotalAmount(totalAmount);
+
+        // Thiết lập trạng thái thanh toán mặc định là chưa thanh toán
+        invoice.setPaidStatus(false);
+
+        // Thiết lập tháng và năm của hóa đơn theo tham số được truyền vào
+        invoice.setMonth(month);
+        invoice.setYear(year);
+
+        // Lưu ID của bản ghi utility reading
+        invoice.setUtilityReadingId(utilityReading.getId());
+
+        return invoiceRepository.save(invoice);
+    }
+
+    /**
+     * Lấy hóa đơn theo ID của UtilityReading
+     */
     public Invoice getInvoiceByUtilityReadingId(int utilityReadingId) {
         return invoiceRepository.findByUtilityReadingId(utilityReadingId);
+    }
+
+    /**
+     * Lấy tất cả hóa đơn của một phòng
+     */
+    public List<Invoice> getInvoicesByRoom(Room room) {
+        return invoiceRepository.findByRoom(room);
+    }
+
+    /**
+     * Lấy tất cả hóa đơn của một khách hàng
+     */
+    public List<Invoice> getInvoicesByCustomer(Customer customer) {
+        return invoiceRepository.findByCustomer(customer);
+    }
+
+    /**
+     * Lấy hóa đơn theo tháng và năm
+     */
+    public List<Invoice> getInvoicesByMonthAndYear(int month, int year) {
+        return invoiceRepository.findByMonthAndYear(month, year);
+    }
+
+    /**
+     * Lấy hóa đơn theo trạng thái thanh toán
+     */
+    public List<Invoice> getInvoicesByPaidStatus(boolean paidStatus) {
+        return invoiceRepository.findByPaidStatus(paidStatus);
+    }
+
+    /**
+     * Lấy hóa đơn trong khoảng thời gian
+     */
+    public List<Invoice> getInvoicesBetweenDates(Date startDate, Date endDate) {
+        return invoiceRepository.findByCreateDateBetween(startDate, endDate);
+    }
+
+    /**
+     * Cập nhật trạng thái thanh toán của hóa đơn
+     */
+    public Invoice markInvoiceAsPaid(int invoiceId) {
+        Invoice invoice = invoiceRepository.findById(invoiceId).orElse(null);
+        if (invoice != null) {
+            invoice.setPaidStatus(true);
+            invoice.setPaymentDate(new Date());
+            return invoiceRepository.save(invoice);
+        }
+        return null;
+    }
+
+    /**
+     * Cập nhật trạng thái chưa thanh toán của hóa đơn
+     */
+    public Invoice markInvoiceAsUnpaid(int invoiceId) {
+        Invoice invoice = invoiceRepository.findById(invoiceId).orElse(null);
+        if (invoice != null) {
+            invoice.setPaidStatus(false);
+            invoice.setPaymentDate(null);
+            return invoiceRepository.save(invoice);
+        }
+        return null;
+    }
+
+    /**
+     * Lấy hóa đơn theo ID
+     */
+    public Invoice getInvoiceById(int invoiceId) {
+        return invoiceRepository.findById(invoiceId).orElse(null);
+    }
+
+    /**
+     * Xóa hóa đơn
+     */
+    public boolean deleteInvoice(int invoiceId) {
+        try {
+            invoiceRepository.deleteById(invoiceId);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Tính tổng doanh thu từ các hóa đơn đã thanh toán
+     */
+    public double calculateTotalRevenue() {
+        List<Invoice> paidInvoices = getInvoicesByPaidStatus(true);
+        return paidInvoices.stream()
+                .mapToDouble(Invoice::getTotalAmount)
+                .sum();
+    }
+
+    /**
+     * Tính tổng doanh thu trong khoảng thời gian
+     */
+    public double calculateRevenueInPeriod(Date startDate, Date endDate) {
+        List<Invoice> invoicesInPeriod = getInvoicesBetweenDates(startDate, endDate);
+        return invoicesInPeriod.stream()
+                .filter(Invoice::isPaidStatus)
+                .mapToDouble(Invoice::getTotalAmount)
+                .sum();
+    }
+
+    /**
+     * Đếm số hóa đơn chưa thanh toán
+     */
+    public long countUnpaidInvoices() {
+        return getInvoicesByPaidStatus(false).size();
+    }
+
+    /**
+     * Tính tổng số tiền chưa thu
+     */
+    public double calculateTotalUnpaidAmount() {
+        List<Invoice> unpaidInvoices = getInvoicesByPaidStatus(false);
+        return unpaidInvoices.stream()
+                .mapToDouble(Invoice::getTotalAmount)
+                .sum();
     }
 }

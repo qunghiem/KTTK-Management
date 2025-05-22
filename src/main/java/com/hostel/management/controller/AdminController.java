@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-//import com.hostel.management.dto.RoomRevenue;
 import com.hostel.management.repository.*;
 import com.hostel.management.model.Payment;
 import javax.servlet.http.HttpSession;
@@ -49,6 +48,7 @@ public class AdminController {
 
     @Autowired
     private InvoiceService invoiceService;
+
     // Thêm repository cần thiết
     @Autowired
     private RoomRepository roomRepository;
@@ -147,35 +147,53 @@ public class AdminController {
     }
 
     @GetMapping("/utility-readings")
-    public String showUtilityReadingsForm(HttpSession session, Model model) {
+    public String showUtilityReadingsForm(@RequestParam(required = false) Integer month,
+                                          @RequestParam(required = false) Integer year,
+                                          HttpSession session, Model model) {
         // Kiểm tra quyền admin
         User user = (User) session.getAttribute("user");
         if (user == null || !"ADMIN".equals(user.getRole())) {
             return "redirect:/login";
         }
 
-        // Lấy danh sách phòng
-        List<Room> rooms = roomService.getAllRooms();
-        model.addAttribute("rooms", rooms);
+        // Nếu không có tháng/năm, lấy tháng/năm hiện tại
+        Calendar cal = Calendar.getInstance();
+        if (month == null) {
+            month = cal.get(Calendar.MONTH) + 1; // Calendar.MONTH bắt đầu từ 0
+        }
+        if (year == null) {
+            year = cal.get(Calendar.YEAR);
+        }
+
+        // Lấy danh sách phòng chưa nhập chỉ số trong tháng đó
+        List<Room> availableRooms = utilityService.getRoomsWithoutReadingInMonth(month, year);
+
+        model.addAttribute("rooms", availableRooms);
+        model.addAttribute("selectedMonth", month);
+        model.addAttribute("selectedYear", year);
 
         return "admin/utility-readings";
     }
 
     @GetMapping("/utility-readings/previous/{roomId}")
     @ResponseBody
-    public Map<String, Object> getPreviousReadings(@PathVariable int roomId) {
+    public Map<String, Object> getPreviousReadings(@PathVariable int roomId,
+                                                   @RequestParam int month,
+                                                   @RequestParam int year) {
         Map<String, Object> response = new HashMap<>();
 
         try {
-            UtilityReading lastReading = utilityService.getLastReading(roomId);
+            UtilityReading lastReading = utilityService.getLastReadingBeforeMonth(roomId, month, year);
 
             if (lastReading != null) {
                 response.put("electric", lastReading.getElectricReading());
                 response.put("water", lastReading.getWaterReading());
+                response.put("readingDate", lastReading.getReadingDate());
             } else {
                 // Nếu không có chỉ số cũ, trả về 0
                 response.put("electric", 0);
                 response.put("water", 0);
+                response.put("readingDate", null);
             }
         } catch (Exception e) {
             response.put("error", e.getMessage());
@@ -186,7 +204,8 @@ public class AdminController {
 
     @PostMapping("/utility-readings/save")
     public String saveUtilityReadings(@RequestParam int roomId,
-                                      @RequestParam String readingDate,
+                                      @RequestParam int month,
+                                      @RequestParam int year,
                                       @RequestParam double electricReading,
                                       @RequestParam double waterReading,
                                       HttpSession session,
@@ -204,16 +223,21 @@ public class AdminController {
                 throw new RuntimeException("Phòng không tồn tại");
             }
 
-            // Lấy chỉ số cũ từ database
-            UtilityReading lastReading = utilityService.getLastReading(roomId);
+            // Kiểm tra xem đã có chỉ số trong tháng này chưa
+            if (utilityService.hasReadingInMonth(roomId, month, year)) {
+                throw new RuntimeException("Phòng này đã có chỉ số trong tháng " + month + "/" + year);
+            }
+
+            // Lấy chỉ số cũ từ tháng trước
+            UtilityReading lastReading = utilityService.getLastReadingBeforeMonth(roomId, month, year);
             double previousElectric = lastReading != null ? lastReading.getElectricReading() : 0;
             double previousWater = lastReading != null ? lastReading.getWaterReading() : 0;
 
-            // Chuyển đổi chuỗi readingDate thành đối tượng Date
-            Date readingDateObj = java.sql.Date.valueOf(readingDate);
+            // Sử dụng thời điểm hiện tại làm ngày ghi chỉ số
+            Date readingDate = new Date();
 
             // Lưu chỉ số mới và tính toán hóa đơn
-            UtilityReading newReading = utilityService.saveReading(roomId, readingDateObj, electricReading, waterReading);
+            UtilityReading newReading = utilityService.saveReadingForMonth(roomId, readingDate, electricReading, waterReading, month, year);
 
             // Lấy hóa đơn mới được tạo
             Invoice invoice = invoiceService.getInvoiceByUtilityReadingId(newReading.getId());
@@ -228,7 +252,9 @@ public class AdminController {
 
             // Chuyển dữ liệu vào model để hiển thị trang thành công
             model.addAttribute("room", room);
-            model.addAttribute("readingDate", readingDateObj);
+            model.addAttribute("readingDate", readingDate);
+            model.addAttribute("month", month);
+            model.addAttribute("year", year);
             model.addAttribute("previousElectric", previousElectric);
             model.addAttribute("previousWater", previousWater);
             model.addAttribute("electricReading", electricReading);
@@ -244,7 +270,7 @@ public class AdminController {
             return "admin/utility-readings-success";
         } catch (Exception e) {
             // Xử lý lỗi
-            return "redirect:/admin/utility-readings?error=" + e.getMessage();
+            return "redirect:/admin/utility-readings?month=" + month + "&year=" + year + "&error=" + e.getMessage();
         }
     }
 }

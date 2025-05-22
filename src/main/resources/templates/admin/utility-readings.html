@@ -121,7 +121,7 @@
         }
 
         .container {
-            width: 400px;
+            width: 450px;
             background-color: white;
             border-radius: 8px;
             box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
@@ -133,6 +133,48 @@
             color: #333;
             font-size: 20px;
             margin-bottom: 25px;
+        }
+
+        .month-selector {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .month-selector-title {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .month-year-inputs {
+            display: flex;
+            gap: 10px;
+        }
+
+        .month-year-inputs select {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .update-btn {
+            padding: 8px 12px;
+            background-color: #27a0dd;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .update-btn:hover {
+            background-color: #1b8bbd;
         }
 
         .form-group {
@@ -168,19 +210,6 @@
             background-size: 12px;
         }
 
-        .date-input {
-            position: relative;
-        }
-
-        .date-input i {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #666;
-            pointer-events: none;
-        }
-
         .previous-readings {
             display: flex;
             justify-content: space-between;
@@ -204,40 +233,6 @@
             font-size: 14px;
             color: #27a0dd;
             font-weight: bold;
-        }
-
-        .number-input {
-            position: relative;
-        }
-
-        .number-spinner {
-            position: absolute;
-            right: 0;
-            top: 0;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .number-spinner button {
-            border: none;
-            background-color: #f1f1f1;
-            color: #666;
-            font-size: 12px;
-            cursor: pointer;
-            height: 50%;
-            width: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .number-spinner button:first-child {
-            border-top-right-radius: 4px;
-        }
-
-        .number-spinner button:last-child {
-            border-bottom-right-radius: 4px;
         }
 
         .submit-btn {
@@ -269,6 +264,25 @@
             text-decoration: underline;
         }
 
+        .current-time {
+            background-color: #e8f4fd;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #2c3e50;
+        }
+
+        .no-rooms-message {
+            text-align: center;
+            padding: 20px;
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 6px;
+            color: #856404;
+            margin-bottom: 20px;
+        }
+
         @media (max-width: 768px) {
             .header {
                 flex-direction: column;
@@ -287,13 +301,17 @@
 
             .container {
                 width: 90%;
-                max-width: 400px;
+                max-width: 450px;
+            }
+
+            .month-year-inputs {
+                flex-direction: column;
             }
         }
     </style>
 </head>
 <body>
-<!-- Thêm header vào đây -->
+<!-- Header -->
 <div class="header">
     <div class="app-title"><i class="fas fa-home"></i> Quản Lý Nhà Trọ</div>
 
@@ -313,12 +331,52 @@
     </div>
 </div>
 
-<!-- Bao toàn bộ nội dung chính trong một div -->
+<!-- Main Content -->
 <div class="main-content">
     <div class="container">
         <h2 class="form-title">Nhập Chỉ Số Điện Nước</h2>
 
-        <form th:action="@{/admin/utility-readings/save}" method="post">
+        <!-- Chọn tháng/năm -->
+        <div class="month-selector">
+            <div class="month-selector-title">Chọn tháng cần nhập chỉ số</div>
+            <form th:action="@{/admin/utility-readings}" method="get">
+                <div class="month-year-inputs">
+                    <select name="month" th:value="${selectedMonth}">
+                        <option value="1" th:selected="${selectedMonth == 1}">Tháng 1</option>
+                        <option value="2" th:selected="${selectedMonth == 2}">Tháng 2</option>
+                        <option value="3" th:selected="${selectedMonth == 3}">Tháng 3</option>
+                        <option value="4" th:selected="${selectedMonth == 4}">Tháng 4</option>
+                        <option value="5" th:selected="${selectedMonth == 5}">Tháng 5</option>
+                        <option value="6" th:selected="${selectedMonth == 6}">Tháng 6</option>
+                        <option value="7" th:selected="${selectedMonth == 7}">Tháng 7</option>
+                        <option value="8" th:selected="${selectedMonth == 8}">Tháng 8</option>
+                        <option value="9" th:selected="${selectedMonth == 9}">Tháng 9</option>
+                        <option value="10" th:selected="${selectedMonth == 10}">Tháng 10</option>
+                        <option value="11" th:selected="${selectedMonth == 11}">Tháng 11</option>
+                        <option value="12" th:selected="${selectedMonth == 12}">Tháng 12</option>
+                    </select>
+                    <select name="year" th:value="${selectedYear}">
+                        <option value="2023" th:selected="${selectedYear == 2023}">2023</option>
+                        <option value="2024" th:selected="${selectedYear == 2024}">2024</option>
+                        <option value="2025" th:selected="${selectedYear == 2025}">2025</option>
+                        <option value="2026" th:selected="${selectedYear == 2026}">2026</option>
+                    </select>
+                    <button type="submit" class="update-btn">Cập nhật</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Hiển thị thông báo nếu không có phòng nào -->
+        <div class="no-rooms-message" th:if="${rooms.isEmpty()}">
+            <i class="fas fa-info-circle"></i>
+            Tất cả các phòng đã nhập chỉ số điện nước cho tháng <span th:text="${selectedMonth + '/' + selectedYear}">5/2025</span> rồi.
+        </div>
+
+        <!-- Form nhập chỉ số -->
+        <form th:action="@{/admin/utility-readings/save}" method="post" th:if="${!rooms.isEmpty()}">
+            <input type="hidden" name="month" th:value="${selectedMonth}">
+            <input type="hidden" name="year" th:value="${selectedYear}">
+
             <div class="form-group">
                 <label class="form-label">Chọn Phòng</label>
                 <select class="form-control form-select" name="roomId" required>
@@ -338,28 +396,18 @@
                 </div>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Ngày Ghi Chỉ Số</label>
-                <div class="date-input">
-                    <input type="date" class="form-control" name="readingDate" required th:value="${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}">
-                    <i class="far fa-calendar"></i>
-                </div>
+            <div class="current-time">
+                <i class="fas fa-clock"></i> Thời gian ghi chỉ số sẽ được tự động lưu khi bạn nhấn "Lên hóa đơn"
             </div>
 
             <div class="form-group">
-                <label class="form-label">Chỉ Số Điện</label>
-                <input type="number" class="form-control" name="electricReading" required min="0" step="0.01">
+                <label class="form-label">Chỉ Số Điện Mới</label>
+                <input type="number" class="form-control" name="electricReading" required min="0" step="0.01" placeholder="Nhập chỉ số điện mới">
             </div>
 
             <div class="form-group">
-                <label class="form-label">Chỉ Số Nước</label>
-                <div class="number-input">
-                    <input type="number" class="form-control" name="waterReading" required min="0" step="0.01">
-                    <div class="number-spinner">
-                        <button type="button" onclick="incrementValue(this.parentNode.previousElementSibling, 1)"><i class="fas fa-chevron-up"></i></button>
-                        <button type="button" onclick="incrementValue(this.parentNode.previousElementSibling, -1)"><i class="fas fa-chevron-down"></i></button>
-                    </div>
-                </div>
+                <label class="form-label">Chỉ Số Nước Mới</label>
+                <input type="number" class="form-control" name="waterReading" required min="0" step="0.01" placeholder="Nhập chỉ số nước mới">
             </div>
 
             <button type="submit" class="submit-btn">Lên hóa đơn</button>
@@ -370,23 +418,30 @@
 </div>
 
 <script>
-    function incrementValue(input, increment) {
-        const currentValue = parseFloat(input.value) || 0;
-        input.value = (currentValue + increment).toFixed(2);
-    }
-
     // Update previous readings when room selection changes
-    // Khi chọn phòng, gửi request AJAX để lấy chỉ số cũ
     document.querySelector('select[name="roomId"]').addEventListener('change', function() {
         const roomId = this.value;
+        const month = document.querySelector('input[name="month"]').value;
+        const year = document.querySelector('input[name="year"]').value;
+
         if (roomId) {
-            fetch(`/admin/utility-readings/previous/${roomId}`)
+            fetch(`/admin/utility-readings/previous/${roomId}?month=${month}&year=${year}`)
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('prev-electric').textContent = data.electric + ' kWh';
-                    document.getElementById('prev-water').textContent = data.water + ' m³';
+                    if (data.error) {
+                        console.error('Error:', data.error);
+                        document.getElementById('prev-electric').textContent = '0 kWh';
+                        document.getElementById('prev-water').textContent = '0 m³';
+                    } else {
+                        document.getElementById('prev-electric').textContent = data.electric + ' kWh';
+                        document.getElementById('prev-water').textContent = data.water + ' m³';
+                    }
                 })
-                .catch(error => console.error('Error fetching previous readings:', error));
+                .catch(error => {
+                    console.error('Error fetching previous readings:', error);
+                    document.getElementById('prev-electric').textContent = '0 kWh';
+                    document.getElementById('prev-water').textContent = '0 m³';
+                });
         }
     });
 </script>
