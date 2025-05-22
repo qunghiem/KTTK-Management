@@ -89,7 +89,7 @@ public class UtilityService {
         return savedReading;
     }
 
-    // Thêm phương thức để lấy chi tiết tính tiền điện nước
+    // Thêm lấy chi tiết tính tiền điện nước
     public Map<String, Double> getElectricCalculationDetails(double usage) {
         return UtilityCalculator.calculateElectricDetails(usage);
     }

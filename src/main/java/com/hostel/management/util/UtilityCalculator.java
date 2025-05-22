@@ -5,17 +5,17 @@ import java.util.Map;
 
 public class UtilityCalculator {
 
-    // Bậc thang giá điện (kWh, VNĐ)
+    // Bậc giá điện (kWh, VNĐ)
     private static final LinkedHashMap<Integer, Double> ELECTRIC_TIERS = new LinkedHashMap<>() {{
-        put(50, 1678.0);    // 0-50 kWh: 1,678 đồng/kWh
-        put(100, 1734.0);   // 51-100 kWh: 1,734 đồng/kWh
-        put(200, 2014.0);   // 101-200 kWh: 2,014 đồng/kWh
-        put(300, 2536.0);   // 201-300 kWh: 2,536 đồng/kWh
-        put(400, 2834.0);   // 301-400 kWh: 2,834 đồng/kWh
-        put(Integer.MAX_VALUE, 2927.0); // Trên 400 kWh: 2,927 đồng/kWh
+        put(50, 1678.0);
+        put(100, 1734.0);
+        put(200, 2014.0);
+        put(300, 2536.0);
+        put(400, 2834.0);
+        put(Integer.MAX_VALUE, 2927.0);
     }};
 
-    // Bậc thang giá nước (m³, VNĐ)
+    // Bậc giá nước (m³, VNĐ)
     private static final LinkedHashMap<Integer, Double> WATER_TIERS = new LinkedHashMap<>() {{
         put(10, 5800.0);     // 0-10 m³: 5,800 đồng/m³
         put(20, 7000.0);     // 11-20 m³: 7,000 đồng/m³
@@ -87,9 +87,6 @@ public class UtilityCalculator {
     /**
      * Phương thức tính chi tiết từng bậc
      */
-    /**
-     * Phương thức tính chi tiết từng bậc
-     */
     private static Map<String, Double> calculateTieredDetails(double usage, LinkedHashMap<Integer, Double> tiers) {
         Map<String, Double> details = new LinkedHashMap<>();
         double remainingUsage = usage;
@@ -102,7 +99,6 @@ public class UtilityCalculator {
 
             double tierUsage = Math.min(remainingUsage, threshold - previousTier);
             if (tierUsage > 0) {
-                // Sửa cách định dạng key
                 String key;
                 if (threshold == Integer.MAX_VALUE) {
                     // Đối với bậc cuối cùng, hiển thị gọn hơn
