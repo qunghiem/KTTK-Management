@@ -597,6 +597,9 @@
             <div class="filter-card">
                 <h2 class="filter-title">Bộ lọc tìm kiếm</h2>
                 <form th:action="@{/rooms}" method="get">
+                    <!-- Thêm input hidden để giữ lại tham số sort -->
+                    <input type="hidden" name="sort" th:value="${param.sort != null ? param.sort[0] : 'latest'}">
+
                     <div class="filter-group">
                         <h3>Khu vực</h3>
                         <div class="form-group">
@@ -654,10 +657,12 @@
 
                 <div class="sort-options">
                     <span>Sắp xếp theo:</span>
-                    <select name="sort" id="sortOrder" onchange="window.location.href=this.value">
-                        <option th:value="@{/rooms(sort='latest')}" th:selected="${param.sort == 'latest'}">Mới nhất</option>
-                        <option th:value="@{/rooms(sort='price_asc')}" th:selected="${param.sort == 'price_asc'}">Giá: Thấp đến cao</option>
-                        <option th:value="@{/rooms(sort='price_desc')}" th:selected="${param.sort == 'price_desc'}">Giá: Cao đến thấp</option>
+                    <select name="sort" id="sortOrder" onchange="applySorting()">
+                        <option value="latest" th:selected="${param.sort == null || param.sort[0] == 'latest'}">Mới nhất</option>
+                        <option value="price_asc" th:selected="${param.sort != null && param.sort[0] == 'price_asc'}">Giá: Thấp đến cao</option>
+                        <option value="price_desc" th:selected="${param.sort != null && param.sort[0] == 'price_desc'}">Giá: Cao đến thấp</option>
+                        <option value="area_asc" th:selected="${param.sort != null && param.sort[0] == 'area_asc'}">Diện tích: Nhỏ đến lớn</option>
+                        <option value="area_desc" th:selected="${param.sort != null && param.sort[0] == 'area_desc'}">Diện tích: Lớn đến nhỏ</option>
                     </select>
                 </div>
             </div>
@@ -782,4 +787,25 @@
     </div>
 </footer>
 </body>
+<script>
+    function applySorting() {
+        const sortValue = document.getElementById('sortOrder').value;
+        const currentUrl = new URL(window.location.href);
+
+        // Cập nhật tham số sort
+        currentUrl.searchParams.set('sort', sortValue);
+
+        // Chuyển hướng đến URL mới
+        window.location.href = currentUrl.toString();
+    }
+
+    // Đảm bảo giá trị sort được giữ lại khi load trang
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const sortParam = urlParams.get('sort');
+        if (sortParam) {
+            document.getElementById('sortOrder').value = sortParam;
+        }
+    });
+</script>
 </html>

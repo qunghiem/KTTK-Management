@@ -24,6 +24,7 @@ public class RoomController {
             @RequestParam(required = false) Float area,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) Integer floor,
+            @RequestParam(required = false, defaultValue = "latest") String sort, // Thêm tham số sort
             Model model) {
 
         List<Room> rooms;
@@ -32,27 +33,17 @@ public class RoomController {
             status = "available";
         }
 
-//        if (priceRange != null && !priceRange.isEmpty() && (minPrice == null || maxPrice == null)) {
-//            String[] prices = priceRange.split("-");
-//            if (prices.length == 2) {
-//                try {
-//                    minPrice = Float.parseFloat(prices[0]);
-//                    maxPrice = Float.parseFloat(prices[1]);
-//                } catch (NumberFormatException e) {
-//                    System.err.println("Lỗi chuyển đổi priceRange: " + priceRange);
-//                }
-//            }
-//        }
-
         System.out.println("Tham số tìm kiếm: district=" + district +
                 ", roomType=" + roomType +
                 ", minPrice=" + minPrice +
-                ", maxPrice=" + maxPrice);
+                ", maxPrice=" + maxPrice +
+                ", sort=" + sort); // Log thêm sort
 
-        // tìm kiếm
-        rooms = roomService.searchRoomsByFilter(district, minPrice, maxPrice, roomType, area, floor, status);
+        // Tìm kiếm với sắp xếp
+        rooms = roomService.searchRoomsByFilterWithSort(district, minPrice, maxPrice, roomType, area, floor, status, sort);
 
         model.addAttribute("rooms", rooms);
+        model.addAttribute("currentSort", sort); // Thêm sort hiện tại vào model
         return "room/roomList";
     }
 

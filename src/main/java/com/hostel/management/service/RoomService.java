@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Comparator;
 
 @Service
 public class RoomService {
@@ -43,5 +44,42 @@ public class RoomService {
                 ", maxPrice=" + maxPrice);
 
         return roomRepository.findByFilter(district, minPrice, maxPrice, roomType, area, floor, status);
+    }
+
+    // Thêm phương thức mới có hỗ trợ sắp xếp
+    public List<Room> searchRoomsByFilterWithSort(String district, Float minPrice, Float maxPrice,
+                                                  String roomType, Float area, Integer floor, String status, String sort) {
+        System.out.println("Service search with sort: district=" + district +
+                ", roomType=" + roomType +
+                ", minPrice=" + minPrice +
+                ", maxPrice=" + maxPrice +
+                ", sort=" + sort);
+
+        List<Room> rooms = roomRepository.findByFilter(district, minPrice, maxPrice, roomType, area, floor, status);
+
+        // Áp dụng sắp xếp
+        if (sort != null) {
+            switch (sort) {
+                case "price_asc":
+                    rooms.sort(Comparator.comparing(Room::getPrice));
+                    break;
+                case "price_desc":
+                    rooms.sort(Comparator.comparing(Room::getPrice).reversed());
+                    break;
+                case "area_asc":
+                    rooms.sort(Comparator.comparing(Room::getArea));
+                    break;
+                case "area_desc":
+                    rooms.sort(Comparator.comparing(Room::getArea).reversed());
+                    break;
+                case "latest":
+                default:
+                    // Sắp xếp theo ID giảm dần (mới nhất)
+                    rooms.sort(Comparator.comparing(Room::getId).reversed());
+                    break;
+            }
+        }
+
+        return rooms;
     }
 }
