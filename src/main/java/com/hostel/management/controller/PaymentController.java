@@ -74,41 +74,41 @@ public class PaymentController {
         return "payment/payment";
     }
 
-    @PostMapping("/payment/process")
-    public String processPayment(@ModelAttribute Payment payment,
-                                 @RequestParam int bookingId,
-                                 HttpSession session,
-                                 Model model) {
-        // Kiểm tra đăng nhập
-        User user = (User) session.getAttribute("user");
-        if (user == null) {
-            return "redirect:/login";
-        }
-
-        try {
-            // Lấy thông tin đặt phòng
-            Booking booking = bookingService.getBookingById(bookingId);
-
-            if (booking == null) {
-                throw new RuntimeException("Không tìm thấy đơn đặt phòng");
-            }
-
-            // Thiết lập thông tin thanh toán
-            payment.setPaymentDate(new Date());
-
-            // Xử lý thanh toán
-            Payment processedPayment = paymentService.processPayment(payment);
-
-            // Lưu ID thanh toán vào session
-            session.setAttribute("paymentId", processedPayment.getId());
-
-            return "redirect:/booking/success/" + bookingId;
-        } catch (Exception e) {
-            model.addAttribute("error", e.getMessage());
-            model.addAttribute("booking", bookingService.getBookingById(bookingId));
-            return "payment/payment";
-        }
-    }
+//    @PostMapping("/payment/process")
+//    public String processPayment(@ModelAttribute Payment payment,
+//                                 @RequestParam int bookingId,
+//                                 HttpSession session,
+//                                 Model model) {
+//        // Kiểm tra đăng nhập
+//        User user = (User) session.getAttribute("user");
+//        if (user == null) {
+//            return "redirect:/login";
+//        }
+//
+//        try {
+//            // Lấy thông tin đặt phòng
+//            Booking booking = bookingService.getBookingById(bookingId);
+//
+//            if (booking == null) {
+//                throw new RuntimeException("Không tìm thấy đơn đặt phòng");
+//            }
+//
+//            // Thiết lập thông tin thanh toán
+//            payment.setPaymentDate(new Date());
+//
+//            // Xử lý thanh toán
+//            Payment processedPayment = paymentService.processPayment(payment);
+//
+//            // Lưu ID thanh toán vào session
+//            session.setAttribute("paymentId", processedPayment.getId());
+//
+//            return "redirect:/booking/success/" + bookingId;
+//        } catch (Exception e) {
+//            model.addAttribute("error", e.getMessage());
+//            model.addAttribute("booking", bookingService.getBookingById(bookingId));
+//            return "payment/payment";
+//        }
+//    }
 
     @GetMapping("/payment/verify/{transactionCode}")
     @ResponseBody

@@ -174,7 +174,7 @@ public class AdminController {
 
         return "admin/utility-readings";
     }
-
+//    lấy chỉ số cũ
     @GetMapping("/utility-readings/previous/{roomId}")
     @ResponseBody
     public Map<String, Object> getPreviousReadings(@PathVariable int roomId,
