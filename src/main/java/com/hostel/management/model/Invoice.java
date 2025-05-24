@@ -78,6 +78,7 @@ public class Invoice {
     @Column(name = "year")
     private int year;
 
-    @Column(name = "utility_reading_id")
-    private int utilityReadingId;
+    @OneToOne
+    @JoinColumn(name = "utility_reading_id")
+    private UtilityReading utilityReading;
 }

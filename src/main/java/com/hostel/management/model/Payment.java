@@ -20,8 +20,9 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(name = "invoice_id")
-    private int invoiceId;
+    @ManyToOne
+    @JoinColumn(name = "invoice_id")
+    private Invoice invoice;
 
     @ManyToOne
     @JoinColumn(name = "customer_id", nullable = false)
@@ -43,14 +44,7 @@ public class Payment {
     @Column(name = "transaction_code")
     private String transactionCode;
 
-    @Column(name = "booking_id")
-    private int bookingId;
-
-    public int getBookingId() {
-        return bookingId;
-    }
-
-    public void setBookingId(int bookingId) {
-        this.bookingId = bookingId;
-    }
+    @ManyToOne
+    @JoinColumn(name = "booking_id")
+    private Booking booking;
 }

@@ -4,9 +4,9 @@ import com.hostel.management.model.Invoice;
 import com.hostel.management.model.Room;
 import com.hostel.management.model.Customer;
 import com.hostel.management.model.UtilityReading;
+import com.hostel.management.model.Booking;
 import com.hostel.management.repository.InvoiceRepository;
 import com.hostel.management.repository.BookingRepository;
-import com.hostel.management.model.Booking;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -74,8 +74,8 @@ public class InvoiceService {
         invoice.setMonth(calendar.get(Calendar.MONTH) + 1); // Tháng trong Calendar bắt đầu từ 0
         invoice.setYear(calendar.get(Calendar.YEAR));
 
-        // Lưu ID của bản ghi utility reading
-        invoice.setUtilityReadingId(utilityReading.getId());
+        // Lưu tham chiếu trực tiếp đến utility reading
+        invoice.setUtilityReading(utilityReading);
 
         return invoiceRepository.save(invoice);
     }
@@ -125,17 +125,17 @@ public class InvoiceService {
         invoice.setMonth(month);
         invoice.setYear(year);
 
-        // Lưu ID của bản ghi utility reading
-        invoice.setUtilityReadingId(utilityReading.getId());
+        // Lưu tham chiếu trực tiếp đến utility reading
+        invoice.setUtilityReading(utilityReading);
 
         return invoiceRepository.save(invoice);
     }
 
     /**
-     * Lấy hóa đơn theo ID của UtilityReading
+     * Lấy hóa đơn theo utility reading
      */
-    public Invoice getInvoiceByUtilityReadingId(int utilityReadingId) {
-        return invoiceRepository.findByUtilityReadingId(utilityReadingId);
+    public Invoice getInvoiceByUtilityReading(UtilityReading utilityReading) {
+        return invoiceRepository.findByUtilityReading(utilityReading);
     }
 
     /**

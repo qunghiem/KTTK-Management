@@ -56,15 +56,15 @@ public class PaymentController {
         payment.setAmount(booking.getDeposit());
         payment.setCustomerId(booking.getCustomerId());
         payment.setMethod(paymentMethod);
+        payment.setBooking(booking);  // Sử dụng tham chiếu trực tiếp
 
         // Tạo mã QR thanh toán nếu cần
         String qrCode = null;
 
-            qrCode = paymentService.generatePaymentQR(
-                    booking.getDeposit(),
-                    "Đặt cọc phòng " + booking.getRoomId().getRoomNumber()
-            );
-
+        qrCode = paymentService.generatePaymentQR(
+                booking.getDeposit(),
+                "Đặt cọc phòng " + booking.getRoomId().getRoomNumber()
+        );
 
         model.addAttribute("booking", booking);
         model.addAttribute("payment", payment);
@@ -73,42 +73,6 @@ public class PaymentController {
 
         return "payment/payment";
     }
-
-//    @PostMapping("/payment/process")
-//    public String processPayment(@ModelAttribute Payment payment,
-//                                 @RequestParam int bookingId,
-//                                 HttpSession session,
-//                                 Model model) {
-//        // Kiểm tra đăng nhập
-//        User user = (User) session.getAttribute("user");
-//        if (user == null) {
-//            return "redirect:/login";
-//        }
-//
-//        try {
-//            // Lấy thông tin đặt phòng
-//            Booking booking = bookingService.getBookingById(bookingId);
-//
-//            if (booking == null) {
-//                throw new RuntimeException("Không tìm thấy đơn đặt phòng");
-//            }
-//
-//            // Thiết lập thông tin thanh toán
-//            payment.setPaymentDate(new Date());
-//
-//            // Xử lý thanh toán
-//            Payment processedPayment = paymentService.processPayment(payment);
-//
-//            // Lưu ID thanh toán vào session
-//            session.setAttribute("paymentId", processedPayment.getId());
-//
-//            return "redirect:/booking/success/" + bookingId;
-//        } catch (Exception e) {
-//            model.addAttribute("error", e.getMessage());
-//            model.addAttribute("booking", bookingService.getBookingById(bookingId));
-//            return "payment/payment";
-//        }
-//    }
 
     @GetMapping("/payment/verify/{transactionCode}")
     @ResponseBody
@@ -140,9 +104,9 @@ public class PaymentController {
         // Lấy thông tin thanh toán từ session
         Payment payment = (Payment) session.getAttribute("payment");
 
-        // Nếu không có trong session, tìm kiếm theo bookingId
+        // Nếu không có trong session, tìm kiếm theo booking
         if (payment == null) {
-            payment = paymentService.getPaymentByBookingId(bookingId);
+            payment = paymentService.getPaymentByBooking(booking);
         }
 
         model.addAttribute("booking", booking);
@@ -172,7 +136,6 @@ public class PaymentController {
             // Lưu cập nhật booking (bao gồm cả đối tượng Room đã cập nhật)
             bookingService.updateBooking(booking);
 
-
             // Tạo một Payment mới
             Payment payment = new Payment();
             payment.setAmount(booking.getDeposit());
@@ -180,7 +143,7 @@ public class PaymentController {
             payment.setMethod("bank_transfer"); // Hoặc lấy từ session
             payment.setPaymentDate(new Date());
             payment.setTransactionCode("TX" + System.currentTimeMillis()); // Tạo mã giao dịch
-            payment.setBookingId(bookingId); // Gán bookingId
+            payment.setBooking(booking); // Gán booking object trực tiếp
 
             // Lưu thông tin thanh toán
             Payment processedPayment = paymentService.processPayment(payment);

@@ -240,7 +240,7 @@ public class AdminController {
             UtilityReading newReading = utilityService.saveReadingForMonth(roomId, readingDate, electricReading, waterReading, month, year);
 
             // Lấy hóa đơn mới được tạo
-            Invoice invoice = invoiceService.getInvoiceByUtilityReadingId(newReading.getId());
+            Invoice invoice = invoiceService.getInvoiceByUtilityReading(newReading);
 
             // Tính lượng tiêu thụ
             double electricUsage = electricReading - previousElectric;

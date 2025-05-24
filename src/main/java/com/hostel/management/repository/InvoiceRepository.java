@@ -3,6 +3,7 @@ package com.hostel.management.repository;
 import com.hostel.management.model.Invoice;
 import com.hostel.management.model.Room;
 import com.hostel.management.model.Customer;
+import com.hostel.management.model.UtilityReading;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -16,5 +17,5 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Integer> {
     List<Invoice> findByCreateDateBetween(Date startDate, Date endDate);
     List<Invoice> findByMonthAndYear(int month, int year);
     List<Invoice> findByPaidStatus(boolean paidStatus);
-    Invoice findByUtilityReadingId(int utilityReadingId);
+    Invoice findByUtilityReading(UtilityReading utilityReading);
 }
