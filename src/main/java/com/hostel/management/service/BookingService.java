@@ -78,9 +78,22 @@ public class BookingService {
         return bookingRepository.save(existingBooking);
     }
 
+    // THAY ĐỔI: Từ getBookingById(int id) thành getBooking(Booking booking)
+    public Booking getBooking(Booking booking) {
+        if (booking == null || booking.getId() <= 0) {
+            throw new IllegalArgumentException("Booking object không hợp lệ");
+        }
+
+        Optional<Booking> foundBooking = bookingRepository.findById(booking.getId());
+        return foundBooking.orElse(null);
+    }
+
+    // Giữ lại method cũ để backward compatibility, nhưng delegate sang method mới
+    @Deprecated
     public Booking getBookingById(int id) {
-        Optional<Booking> booking = bookingRepository.findById(id);
-        return booking.orElse(null);
+        Booking searchBooking = new Booking();
+        searchBooking.setId(id);
+        return getBooking(searchBooking);
     }
 
     public List<Booking> getBookingsByCustomer(Customer customer) {

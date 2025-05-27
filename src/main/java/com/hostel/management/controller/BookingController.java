@@ -261,6 +261,8 @@ public class BookingController {
         }
     }
 
+    // Chỉ hiển thị những method cần thay đổi trong BookingController
+
     @GetMapping("/booking/confirm/{bookingId}")
     public String confirmBookingForm(@PathVariable int bookingId, Model model, HttpSession session) {
         // Kiểm tra đăng nhập
@@ -269,8 +271,10 @@ public class BookingController {
             return "redirect:/login";
         }
 
-        // Lấy thông tin đặt phòng
-        Booking booking = bookingService.getBookingById(bookingId);
+        // THAY ĐỔI: Tạo Booking object để tìm kiếm
+        Booking searchBooking = new Booking();
+        searchBooking.setId(bookingId);
+        Booking booking = bookingService.getBooking(searchBooking);
 
         if (booking == null) {
             return "redirect:/rooms?error=booking_not_found";
@@ -308,7 +312,11 @@ public class BookingController {
         }
 
         try {
-            Booking booking = bookingService.getBookingById(bookingId);
+            // THAY ĐỔI: Tạo Booking object để tìm kiếm
+            Booking searchBooking = new Booking();
+            searchBooking.setId(bookingId);
+            Booking booking = bookingService.getBooking(searchBooking);
+
             if (booking != null) {
                 bookingService.cancelBooking(booking);
             }
@@ -326,7 +334,10 @@ public class BookingController {
             return "redirect:/login";
         }
 
-        Booking booking = bookingService.getBookingById(id);
+        // THAY ĐỔI: Tạo Booking object để tìm kiếm
+        Booking searchBooking = new Booking();
+        searchBooking.setId(id);
+        Booking booking = bookingService.getBooking(searchBooking);
 
         if (booking == null) {
             return "redirect:/customer/bookings?error=booking_not_found";

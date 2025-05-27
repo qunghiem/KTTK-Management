@@ -28,6 +28,8 @@ public class PaymentController {
     @Autowired
     private CustomerService customerService;
 
+    // Chỉ hiển thị những method cần thay đổi trong PaymentController
+
     @GetMapping("/payment/{bookingId}")
     public String showPaymentForm(@PathVariable int bookingId, Model model, HttpSession session) {
         // Kiểm tra đăng nhập
@@ -36,8 +38,10 @@ public class PaymentController {
             return "redirect:/login";
         }
 
-        // Lấy thông tin đặt phòng
-        Booking booking = bookingService.getBookingById(bookingId);
+        // THAY ĐỔI: Tạo Booking object để tìm kiếm
+        Booking searchBooking = new Booking();
+        searchBooking.setId(bookingId);
+        Booking booking = bookingService.getBooking(searchBooking);
 
         if (booking == null) {
             return "redirect:/customer/bookings?error=booking_not_found";
@@ -58,33 +62,12 @@ public class PaymentController {
         payment.setMethod(paymentMethod);
         payment.setBooking(booking);  // Sử dụng tham chiếu trực tiếp
 
-        // Tạo mã QR thanh toán nếu cần
-//        String qrCode = null;
-//
-//        qrCode = paymentService.generatePaymentQR(
-//                booking.getDeposit(),
-//                "Đặt cọc phòng " + booking.getRoomId().getRoomNumber()
-//        );
-
         model.addAttribute("booking", booking);
         model.addAttribute("payment", payment);
-//        model.addAttribute("qrCode", qrCode);
         model.addAttribute("paymentMethods", paymentService.getPaymentMethods());
 
         return "payment/payment";
     }
-
-//    @GetMapping("/payment/verify/{transactionCode}")
-//    @ResponseBody
-//    public String verifyPayment(@PathVariable String transactionCode) {
-//        boolean verified = paymentService.verifyPayment(transactionCode);
-//
-//        if (verified) {
-//            return "success";
-//        } else {
-//            return "invalid";
-//        }
-//    }
 
     @GetMapping("/booking/success/{bookingId}")
     public String showBookingSuccess(@PathVariable int bookingId, Model model, HttpSession session) {
@@ -94,8 +77,10 @@ public class PaymentController {
             return "redirect:/login";
         }
 
-        // Lấy thông tin đặt phòng
-        Booking booking = bookingService.getBookingById(bookingId);
+        // THAY ĐỔI: Tạo Booking object để tìm kiếm
+        Booking searchBooking = new Booking();
+        searchBooking.setId(bookingId);
+        Booking booking = bookingService.getBooking(searchBooking);
 
         if (booking == null) {
             return "redirect:/customer/bookings?error=booking_not_found";
@@ -119,8 +104,10 @@ public class PaymentController {
     @PostMapping("/payment/confirm/{bookingId}")
     public String confirmPayment(@PathVariable int bookingId, HttpSession session) {
         try {
-            // Lấy thông tin đặt phòng
-            Booking booking = bookingService.getBookingById(bookingId);
+            // THAY ĐỔI: Tạo Booking object để tìm kiếm
+            Booking searchBooking = new Booking();
+            searchBooking.setId(bookingId);
+            Booking booking = bookingService.getBooking(searchBooking);
 
             if (booking == null) {
                 return "redirect:/customer/bookings?error=booking_not_found";
