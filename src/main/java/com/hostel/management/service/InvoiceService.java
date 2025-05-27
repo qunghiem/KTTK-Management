@@ -271,4 +271,39 @@ public class InvoiceService {
                 .mapToDouble(Invoice::getTotalAmount)
                 .sum();
     }
+
+    /**
+     * Cập nhật hóa đơn từ UtilityReading đã được sửa đổi
+     */
+    public Invoice updateInvoiceFromUtilityReading(UtilityReading utilityReading, double previousElectric, double previousWater, int month, int year) {
+        // Tìm hóa đơn tương ứng với utility reading
+        Invoice existingInvoice = getInvoiceByUtilityReading(utilityReading);
+
+        if (existingInvoice == null) {
+            throw new RuntimeException("Không tìm thấy hóa đơn tương ứng với chỉ số điện nước");
+        }
+
+        Room room = utilityReading.getRoom();
+
+        // Cập nhật thông tin hóa đơn
+        existingInvoice.setElectricReading(utilityReading.getElectricReading());
+        existingInvoice.setPreviousElectricReading(previousElectric);
+        existingInvoice.setElectricUsage(utilityReading.getElectricReading() - previousElectric);
+        existingInvoice.setElectricTotal(utilityReading.getElectricTotal());
+
+        existingInvoice.setWaterReading(utilityReading.getWaterReading());
+        existingInvoice.setPreviousWaterReading(previousWater);
+        existingInvoice.setWaterUsage(utilityReading.getWaterReading() - previousWater);
+        existingInvoice.setWaterTotal(utilityReading.getWaterTotal());
+
+        // Tính lại tổng tiền
+        double totalAmount = utilityReading.getElectricTotal() + utilityReading.getWaterTotal() + room.getPrice();
+        existingInvoice.setTotalAmount(totalAmount);
+
+        // Cập nhật tháng và năm
+        existingInvoice.setMonth(month);
+        existingInvoice.setYear(year);
+
+        return invoiceRepository.save(existingInvoice);
+    }
 }

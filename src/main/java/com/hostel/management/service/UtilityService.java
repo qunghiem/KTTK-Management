@@ -464,4 +464,53 @@ public class UtilityService {
             return false;
         }
     }
+    /**
+     * Lấy danh sách phòng đã nhập chỉ số trong tháng được chỉ định
+     */
+    public List<Room> getRoomsWithReadingInMonth(int month, int year) {
+        if (month < 1 || month > 12) {
+            throw new IllegalArgumentException("Tháng phải từ 1 đến 12");
+        }
+
+        if (year < 1900 || year > 3000) {
+            throw new IllegalArgumentException("Năm không hợp lệ");
+        }
+
+        List<Room> allRooms = roomRepository.findAll();
+
+        return allRooms.stream()
+                .filter(room -> hasReadingInMonth(room, month, year))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Lấy chỉ số điện nước trong tháng cụ thể
+     */
+    public UtilityReading getReadingInMonth(Room room, int month, int year) {
+        if (room == null || room.getId() == 0) {
+            throw new IllegalArgumentException("Room không được null và phải có ID hợp lệ");
+        }
+
+        if (month < 1 || month > 12) {
+            throw new IllegalArgumentException("Tháng phải từ 1 đến 12");
+        }
+
+        if (year < 1900 || year > 3000) {
+            throw new IllegalArgumentException("Năm không hợp lệ");
+        }
+
+        // Tạo ngày đầu và cuối tháng
+        Calendar startCal = Calendar.getInstance();
+        startCal.set(year, month - 1, 1, 0, 0, 0);
+        startCal.set(Calendar.MILLISECOND, 0);
+        Date startOfMonth = startCal.getTime();
+
+        Calendar endCal = Calendar.getInstance();
+        endCal.set(year, month - 1, startCal.getActualMaximum(Calendar.DAY_OF_MONTH), 23, 59, 59);
+        endCal.set(Calendar.MILLISECOND, 999);
+        Date endOfMonth = endCal.getTime();
+
+        List<UtilityReading> readings = utilityReadingRepository.findByRoomAndReadingDateBetween(room, startOfMonth, endOfMonth);
+        return readings.isEmpty() ? null : readings.get(0);
+    }
 }

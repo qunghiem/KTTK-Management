@@ -89,15 +89,18 @@ public class AdminController {
         }
 
         // Lấy danh sách phòng chưa nhập chỉ số trong tháng đó
-        List<Room> availableRooms = utilityService.getRoomsWithoutReadingInMonth(month, year);
+        List<Room> unenteredRooms = utilityService.getRoomsWithoutReadingInMonth(month, year);
 
-        model.addAttribute("rooms", availableRooms);
+        // Lấy danh sách phòng đã nhập chỉ số trong tháng đó
+        List<Room> enteredRooms = utilityService.getRoomsWithReadingInMonth(month, year);
+
+        model.addAttribute("unenteredRooms", unenteredRooms);
+        model.addAttribute("enteredRooms", enteredRooms);
         model.addAttribute("selectedMonth", month);
         model.addAttribute("selectedYear", year);
 
         return "admin/utility-readings";
     }
-
     // Lấy chỉ số cũ
     @GetMapping("/utility-readings/previous/{roomId}")
     @ResponseBody
@@ -304,5 +307,127 @@ public class AdminController {
         model.addAttribute("unpaidAmount", unpaidAmount);
 
         return "admin/reports";
+    }
+
+    // Lấy chỉ số hiện tại của phòng đã nhập
+    @GetMapping("/utility-readings/current/{roomId}")
+    @ResponseBody
+    public Map<String, Object> getCurrentReadings(@PathVariable int roomId,
+                                                  @RequestParam int month,
+                                                  @RequestParam int year) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            Room room = roomService.getRoomById(roomId);
+            if (room == null) {
+                response.put("error", "Không tìm thấy phòng");
+                return response;
+            }
+
+            // Lấy chỉ số hiện tại trong tháng
+            UtilityReading currentReading = utilityService.getReadingInMonth(room, month, year);
+
+            if (currentReading != null) {
+                response.put("electric", currentReading.getElectricReading());
+                response.put("water", currentReading.getWaterReading());
+                response.put("readingDate", currentReading.getReadingDate());
+                response.put("readingId", currentReading.getId());
+
+                // Lấy chỉ số cũ để hiển thị
+                UtilityReading previousReading = utilityService.getLastReadingBeforeMonth(room, month, year);
+                response.put("previousElectric", previousReading != null ? previousReading.getElectricReading() : 0);
+                response.put("previousWater", previousReading != null ? previousReading.getWaterReading() : 0);
+            } else {
+                response.put("error", "Không tìm thấy chỉ số cho tháng này");
+            }
+        } catch (Exception e) {
+            response.put("error", e.getMessage());
+        }
+
+        return response;
+    }
+
+    // Cập nhật chỉ số đã nhập
+    @PostMapping("/utility-readings/update")
+    public String updateUtilityReadings(@RequestParam int readingId,
+                                        @RequestParam int roomId,
+                                        @RequestParam int month,
+                                        @RequestParam int year,
+                                        @RequestParam double electricReading,
+                                        @RequestParam double waterReading,
+                                        HttpSession session,
+                                        Model model) {
+        // Kiểm tra quyền admin
+        User user = (User) session.getAttribute("user");
+        if (user == null || !"ADMIN".equals(user.getRole())) {
+            return "redirect:/login";
+        }
+
+        try {
+            // Lấy chỉ số cũ để validate và tính toán
+            UtilityReading existingReading = utilityService.getUtilityReadingById(readingId);
+            if (existingReading == null) {
+                throw new RuntimeException("Không tìm thấy chỉ số điện nước");
+            }
+
+            Room room = roomService.getRoomById(roomId);
+            if (room == null) {
+                throw new RuntimeException("Phòng không tồn tại");
+            }
+
+            // Lấy chỉ số trước đó để validate
+            UtilityReading lastReading = utilityService.getLastReadingBeforeMonth(room, month, year);
+            double previousElectric = lastReading != null ? lastReading.getElectricReading() : 0;
+            double previousWater = lastReading != null ? lastReading.getWaterReading() : 0;
+
+            // Validate chỉ số mới
+            if (electricReading < previousElectric) {
+                throw new RuntimeException("Chỉ số điện mới không thể nhỏ hơn chỉ số cũ (" + previousElectric + ")");
+            }
+            if (waterReading < previousWater) {
+                throw new RuntimeException("Chỉ số nước mới không thể nhỏ hơn chỉ số cũ (" + previousWater + ")");
+            }
+
+            // Cập nhật chỉ số
+            existingReading.setElectricReading(electricReading);
+            existingReading.setWaterReading(waterReading);
+
+            // Tính lại tổng tiền
+            double electricUsage = electricReading - previousElectric;
+            double waterUsage = waterReading - previousWater;
+
+            Map<String, Double> electricDetails = utilityService.getElectricCalculationDetails(electricUsage);
+            Map<String, Double> waterDetails = utilityService.getWaterCalculationDetails(waterUsage);
+
+            existingReading.setElectricTotal(electricDetails.get("Tổng cộng"));
+            existingReading.setWaterTotal(waterDetails.get("Tổng cộng"));
+
+            // Lưu chỉ số đã cập nhật
+            UtilityReading updatedReading = utilityService.updateUtilityReading(existingReading);
+
+            // Cập nhật lại hóa đơn tương ứng
+            invoiceService.updateInvoiceFromUtilityReading(updatedReading, previousElectric, previousWater, month, year);
+
+            // Chuyển dữ liệu để hiển thị trang thành công
+            model.addAttribute("room", room);
+            model.addAttribute("readingDate", updatedReading.getReadingDate());
+            model.addAttribute("month", month);
+            model.addAttribute("year", year);
+            model.addAttribute("previousElectric", previousElectric);
+            model.addAttribute("previousWater", previousWater);
+            model.addAttribute("electricReading", electricReading);
+            model.addAttribute("waterReading", waterReading);
+            model.addAttribute("electricUsage", electricUsage);
+            model.addAttribute("waterUsage", waterUsage);
+            model.addAttribute("electricTotal", updatedReading.getElectricTotal());
+            model.addAttribute("waterTotal", updatedReading.getWaterTotal());
+            model.addAttribute("electricDetails", electricDetails);
+            model.addAttribute("waterDetails", waterDetails);
+            model.addAttribute("isUpdate", true); // Đánh dấu là cập nhật
+
+            return "admin/utility-readings-success";
+        } catch (Exception e) {
+            return "redirect:/admin/utility-readings?month=" + month + "&year=" + year + "&error=" + e.getMessage();
+        }
     }
 }
