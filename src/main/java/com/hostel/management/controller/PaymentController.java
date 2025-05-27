@@ -59,32 +59,32 @@ public class PaymentController {
         payment.setBooking(booking);  // Sử dụng tham chiếu trực tiếp
 
         // Tạo mã QR thanh toán nếu cần
-        String qrCode = null;
-
-        qrCode = paymentService.generatePaymentQR(
-                booking.getDeposit(),
-                "Đặt cọc phòng " + booking.getRoomId().getRoomNumber()
-        );
+//        String qrCode = null;
+//
+//        qrCode = paymentService.generatePaymentQR(
+//                booking.getDeposit(),
+//                "Đặt cọc phòng " + booking.getRoomId().getRoomNumber()
+//        );
 
         model.addAttribute("booking", booking);
         model.addAttribute("payment", payment);
-        model.addAttribute("qrCode", qrCode);
+//        model.addAttribute("qrCode", qrCode);
         model.addAttribute("paymentMethods", paymentService.getPaymentMethods());
 
         return "payment/payment";
     }
 
-    @GetMapping("/payment/verify/{transactionCode}")
-    @ResponseBody
-    public String verifyPayment(@PathVariable String transactionCode) {
-        boolean verified = paymentService.verifyPayment(transactionCode);
-
-        if (verified) {
-            return "success";
-        } else {
-            return "invalid";
-        }
-    }
+//    @GetMapping("/payment/verify/{transactionCode}")
+//    @ResponseBody
+//    public String verifyPayment(@PathVariable String transactionCode) {
+//        boolean verified = paymentService.verifyPayment(transactionCode);
+//
+//        if (verified) {
+//            return "success";
+//        } else {
+//            return "invalid";
+//        }
+//    }
 
     @GetMapping("/booking/success/{bookingId}")
     public String showBookingSuccess(@PathVariable int bookingId, Model model, HttpSession session) {

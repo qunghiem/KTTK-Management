@@ -4,10 +4,12 @@ import com.hostel.management.model.Payment;
 import com.hostel.management.model.Booking;
 import com.hostel.management.model.Room;
 import com.hostel.management.model.Invoice;
+import com.hostel.management.model.Customer;
 import com.hostel.management.repository.PaymentRepository;
+import com.hostel.management.repository.BookingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.hostel.management.repository.BookingRepository;
+
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -43,29 +45,72 @@ public class PaymentService {
         return paymentRepository.save(payment);
     }
 
-    public boolean verifyPayment(String transactionCode) {
-        Payment payment = paymentRepository.findByTransactionCode(transactionCode);
-        return payment != null;
+    public Payment createPayment(Payment payment) {
+        return paymentRepository.save(payment);
     }
 
-    public List<String> getPaymentMethods() {
-        return List.of("bank_transfer", "credit_card", "momo", "zalopay");
+    public Payment updatePayment(Payment payment) {
+        Payment existingPayment = paymentRepository.findById(payment.getId()).orElse(null);
+        if (existingPayment == null) {
+            throw new RuntimeException("Không tìm thấy thông tin thanh toán");
+        }
+        return paymentRepository.save(payment);
     }
 
-    public String generatePaymentQR(float amount, String description) {
-        String qrData = "amount=" + amount + "&desc=" + description + "&timestamp=" + System.currentTimeMillis();
-        return "qr_code_data_" + qrData.hashCode();
+    public Payment getPaymentById(int id) {
+        return paymentRepository.findById(id).orElse(null);
     }
 
-    private String generateTransactionCode() {
-        return UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase();
+    public List<Payment> getPaymentsByCustomer(Customer customer) {
+        return paymentRepository.findByCustomerId(customer);
+    }
+
+    public List<Payment> getPaymentsByInvoice(Invoice invoice) {
+        return paymentRepository.findByInvoice(invoice);
     }
 
     public Payment getPaymentByBooking(Booking booking) {
         return paymentRepository.findByBooking(booking);
     }
 
-    public List<Payment> findByInvoice(Invoice invoice) {
-        return paymentRepository.findByInvoice(invoice);
+    public Payment getPaymentByTransactionCode(String transactionCode) {
+        return paymentRepository.findByTransactionCode(transactionCode);
+    }
+
+    public List<Payment> getPaymentsBetweenDates(Date startDate, Date endDate) {
+        return paymentRepository.findByPaymentDateBetween(startDate, endDate);
+    }
+
+    public boolean verifyPayment(Payment payment) {
+        Payment existingPayment = paymentRepository.findByTransactionCode(payment.getTransactionCode());
+        return existingPayment != null;
+    }
+
+    public List<String> getPaymentMethods() {
+        return List.of("bank_transfer", "credit_card", "momo", "zalopay");
+    }
+
+    public String generatePaymentQR(Payment payment) {
+        String qrData = "amount=" + payment.getAmount() +
+                "&desc=" + generatePaymentDescription(payment) +
+                "&timestamp=" + System.currentTimeMillis();
+        return "qr_code_data_" + qrData.hashCode();
+    }
+
+    private String generatePaymentDescription(Payment payment) {
+        if (payment.getBooking() != null) {
+            return "Đặt cọc phòng " + payment.getBooking().getRoomId().getRoomNumber();
+        } else if (payment.getInvoice() != null) {
+            return "Thanh toán hóa đơn " + payment.getInvoice().getId();
+        }
+        return "Thanh toán dịch vụ";
+    }
+
+    private String generateTransactionCode() {
+        return UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase();
+    }
+
+    public void deletePayment(Payment payment) {
+        paymentRepository.delete(payment);
     }
 }

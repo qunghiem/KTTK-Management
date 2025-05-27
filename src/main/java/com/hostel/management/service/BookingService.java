@@ -34,48 +34,48 @@ public class BookingService {
         booking.setStatus("pending");
 
         // Tính toán tiền đặt cọc (30% giá phòng)
-        float deposit = calculateDeposit(room.getPrice());
+        float deposit = calculateDeposit(room);
         booking.setDeposit(deposit);
 
         return bookingRepository.save(booking);
     }
 
     @Transactional
-    public Booking confirmBooking(int bookingId) {
-        Optional<Booking> bookingOpt = bookingRepository.findById(bookingId);
+    public Booking confirmBooking(Booking booking) {
+        Optional<Booking> bookingOpt = bookingRepository.findById(booking.getId());
 
         if (!bookingOpt.isPresent()) {
             throw new RuntimeException("Không tìm thấy đơn đặt phòng");
         }
 
-        Booking booking = bookingOpt.get();
-        booking.setStatus("confirmed");
+        Booking existingBooking = bookingOpt.get();
+        existingBooking.setStatus("confirmed");
 
         // Cập nhật trạng thái phòng
-        Room room = booking.getRoomId();
+        Room room = existingBooking.getRoomId();
         room.setStatus("booked"); // Đảm bảo sử dụng "booked" thống nhất
         roomRepository.save(room);
 
-        return bookingRepository.save(booking);
+        return bookingRepository.save(existingBooking);
     }
 
     @Transactional
-    public Booking cancelBooking(int bookingId) {
-        Optional<Booking> bookingOpt = bookingRepository.findById(bookingId);
+    public Booking cancelBooking(Booking booking) {
+        Optional<Booking> bookingOpt = bookingRepository.findById(booking.getId());
 
         if (!bookingOpt.isPresent()) {
             throw new RuntimeException("Không tìm thấy đơn đặt phòng");
         }
 
-        Booking booking = bookingOpt.get();
-        booking.setStatus("cancelled");
+        Booking existingBooking = bookingOpt.get();
+        existingBooking.setStatus("cancelled");
 
         // Cập nhật trạng thái phòng
-        Room room = booking.getRoomId();
+        Room room = existingBooking.getRoomId();
         room.setStatus("available");
         roomRepository.save(room);
 
-        return bookingRepository.save(booking);
+        return bookingRepository.save(existingBooking);
     }
 
     public Booking getBookingById(int id) {
@@ -83,12 +83,24 @@ public class BookingService {
         return booking.orElse(null);
     }
 
+    public List<Booking> getBookingsByCustomer(Customer customer) {
+        return bookingRepository.findByCustomerId(customer);
+    }
+
+    public List<Booking> getBookingsByRoom(Room room) {
+        return bookingRepository.findByRoomId(room);
+    }
+
+    public List<Booking> getBookingsByStatus(String status) {
+        return bookingRepository.findByStatus(status);
+    }
+
     @Transactional
     public Booking updateBooking(Booking booking) {
         return bookingRepository.save(booking);
     }
 
-    public float calculateDeposit(float roomPrice) {
-        return roomPrice * 0.3f; // 30% giá phòng
+    private float calculateDeposit(Room room) {
+        return room.getPrice() * 0.3f; // 30% giá phòng
     }
 }

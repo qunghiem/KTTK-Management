@@ -132,6 +132,27 @@ public class InvoiceService {
     }
 
     /**
+     * Tạo hóa đơn mới
+     */
+    public Invoice createInvoice(Invoice invoice) {
+        if (invoice.getCreateDate() == null) {
+            invoice.setCreateDate(new Date());
+        }
+        return invoiceRepository.save(invoice);
+    }
+
+    /**
+     * Cập nhật hóa đơn
+     */
+    public Invoice updateInvoice(Invoice invoice) {
+        Invoice existingInvoice = invoiceRepository.findById(invoice.getId()).orElse(null);
+        if (existingInvoice == null) {
+            throw new RuntimeException("Không tìm thấy hóa đơn");
+        }
+        return invoiceRepository.save(invoice);
+    }
+
+    /**
      * Lấy hóa đơn theo utility reading
      */
     public Invoice getInvoiceByUtilityReading(UtilityReading utilityReading) {
@@ -176,12 +197,12 @@ public class InvoiceService {
     /**
      * Cập nhật trạng thái thanh toán của hóa đơn
      */
-    public Invoice markInvoiceAsPaid(int invoiceId) {
-        Invoice invoice = invoiceRepository.findById(invoiceId).orElse(null);
-        if (invoice != null) {
-            invoice.setPaidStatus(true);
-            invoice.setPaymentDate(new Date());
-            return invoiceRepository.save(invoice);
+    public Invoice markInvoiceAsPaid(Invoice invoice) {
+        Invoice existingInvoice = invoiceRepository.findById(invoice.getId()).orElse(null);
+        if (existingInvoice != null) {
+            existingInvoice.setPaidStatus(true);
+            existingInvoice.setPaymentDate(new Date());
+            return invoiceRepository.save(existingInvoice);
         }
         return null;
     }
@@ -189,12 +210,12 @@ public class InvoiceService {
     /**
      * Cập nhật trạng thái chưa thanh toán của hóa đơn
      */
-    public Invoice markInvoiceAsUnpaid(int invoiceId) {
-        Invoice invoice = invoiceRepository.findById(invoiceId).orElse(null);
-        if (invoice != null) {
-            invoice.setPaidStatus(false);
-            invoice.setPaymentDate(null);
-            return invoiceRepository.save(invoice);
+    public Invoice markInvoiceAsUnpaid(Invoice invoice) {
+        Invoice existingInvoice = invoiceRepository.findById(invoice.getId()).orElse(null);
+        if (existingInvoice != null) {
+            existingInvoice.setPaidStatus(false);
+            existingInvoice.setPaymentDate(null);
+            return invoiceRepository.save(existingInvoice);
         }
         return null;
     }
@@ -209,13 +230,8 @@ public class InvoiceService {
     /**
      * Xóa hóa đơn
      */
-    public boolean deleteInvoice(int invoiceId) {
-        try {
-            invoiceRepository.deleteById(invoiceId);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
+    public void deleteInvoice(Invoice invoice) {
+        invoiceRepository.delete(invoice);
     }
 
     /**

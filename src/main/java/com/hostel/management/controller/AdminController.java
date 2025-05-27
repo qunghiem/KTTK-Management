@@ -12,23 +12,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import com.hostel.management.repository.*;
 import com.hostel.management.model.Payment;
-import javax.servlet.http.HttpSession;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Calendar;
+import com.hostel.management.model.Invoice;
+import com.hostel.management.service.InvoiceService;
+
 import javax.servlet.http.HttpSession;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import com.hostel.management.model.Invoice;
-import com.hostel.management.service.InvoiceService;
-
+import java.util.Calendar;
 
 @Controller
 @RequestMapping("/admin")
@@ -48,19 +41,6 @@ public class AdminController {
 
     @Autowired
     private InvoiceService invoiceService;
-
-    // Thêm repository cần thiết
-    @Autowired
-    private RoomRepository roomRepository;
-
-    @Autowired
-    private BookingRepository bookingRepository;
-
-    @Autowired
-    private PaymentRepository paymentRepository;
-
-    @Autowired
-    private UtilityReadingRepository utilityReadingRepository;
 
     @GetMapping("/dashboard")
     public String dashboard(HttpSession session, Model model) {
@@ -123,6 +103,56 @@ public class AdminController {
         if (user == null || !"ADMIN".equals(user.getRole())) {
             return "redirect:/login";
         }
+
+        try {
+            if (room.getId() == 0) {
+                // Tạo mới phòng
+                roomService.createRoom(room);
+            } else {
+                // Cập nhật phòng
+                roomService.updateRoom(room);
+            }
+        } catch (Exception e) {
+            return "redirect:/admin/rooms/manage?error=" + e.getMessage();
+        }
+
+        return "redirect:/admin/rooms/manage";
+    }
+
+    @GetMapping("/rooms/edit/{id}")
+    public String showEditRoomForm(@PathVariable int id, HttpSession session, Model model) {
+        // Kiểm tra quyền admin
+        User user = (User) session.getAttribute("user");
+        if (user == null || !"ADMIN".equals(user.getRole())) {
+            return "redirect:/login";
+        }
+
+        Room room = roomService.getRoomById(id);
+        if (room == null) {
+            return "redirect:/admin/rooms/manage?error=room_not_found";
+        }
+
+        model.addAttribute("room", room);
+        return "admin/rooms/form";
+    }
+
+    @GetMapping("/rooms/delete/{id}")
+    public String deleteRoom(@PathVariable int id, HttpSession session) {
+        // Kiểm tra quyền admin
+        User user = (User) session.getAttribute("user");
+        if (user == null || !"ADMIN".equals(user.getRole())) {
+            return "redirect:/login";
+        }
+
+        try {
+            Room room = roomService.getRoomById(id);
+            if (room != null) {
+                roomService.deleteRoom(room);
+            }
+        } catch (Exception e) {
+            return "redirect:/admin/rooms/manage?error=" + e.getMessage();
+        }
+
         return "redirect:/admin/rooms/manage";
     }
 
@@ -133,6 +163,14 @@ public class AdminController {
         if (user == null || !"ADMIN".equals(user.getRole())) {
             return "redirect:/login";
         }
+
+        // Lấy danh sách booking
+        List<Booking> pendingBookings = bookingService.getBookingsByStatus("pending");
+        List<Booking> confirmedBookings = bookingService.getBookingsByStatus("confirmed");
+
+        model.addAttribute("pendingBookings", pendingBookings);
+        model.addAttribute("confirmedBookings", confirmedBookings);
+
         return "admin/bookings/manage";
     }
 
@@ -143,6 +181,10 @@ public class AdminController {
         if (user == null || !"ADMIN".equals(user.getRole())) {
             return "redirect:/login";
         }
+
+        // Lấy danh sách khách hàng
+        model.addAttribute("customers", customerService.getAllCustomers());
+
         return "admin/customers/manage";
     }
 
@@ -174,7 +216,8 @@ public class AdminController {
 
         return "admin/utility-readings";
     }
-//    lấy chỉ số cũ
+
+    // Lấy chỉ số cũ
     @GetMapping("/utility-readings/previous/{roomId}")
     @ResponseBody
     public Map<String, Object> getPreviousReadings(@PathVariable int roomId,
@@ -183,7 +226,13 @@ public class AdminController {
         Map<String, Object> response = new HashMap<>();
 
         try {
-            UtilityReading lastReading = utilityService.getLastReadingBeforeMonth(roomId, month, year);
+            Room room = roomService.getRoomById(roomId);
+            if (room == null) {
+                response.put("error", "Không tìm thấy phòng");
+                return response;
+            }
+
+            UtilityReading lastReading = utilityService.getLastReadingBeforeMonth(room, month, year);
 
             if (lastReading != null) {
                 response.put("electric", lastReading.getElectricReading());
@@ -224,20 +273,27 @@ public class AdminController {
             }
 
             // Kiểm tra xem đã có chỉ số trong tháng này chưa
-            if (utilityService.hasReadingInMonth(roomId, month, year)) {
+            if (utilityService.hasReadingInMonth(room, month, year)) {
                 throw new RuntimeException("Phòng này đã có chỉ số trong tháng " + month + "/" + year);
             }
 
             // Lấy chỉ số cũ từ tháng trước
-            UtilityReading lastReading = utilityService.getLastReadingBeforeMonth(roomId, month, year);
+            UtilityReading lastReading = utilityService.getLastReadingBeforeMonth(room, month, year);
             double previousElectric = lastReading != null ? lastReading.getElectricReading() : 0;
             double previousWater = lastReading != null ? lastReading.getWaterReading() : 0;
 
             // Sử dụng thời điểm hiện tại làm ngày ghi chỉ số
             Date readingDate = new Date();
 
+            // Tạo đối tượng UtilityReading
+            UtilityReading utilityReading = new UtilityReading();
+            utilityReading.setRoom(room);
+            utilityReading.setReadingDate(readingDate);
+            utilityReading.setElectricReading(electricReading);
+            utilityReading.setWaterReading(waterReading);
+
             // Lưu chỉ số mới và tính toán hóa đơn
-            UtilityReading newReading = utilityService.saveReadingForMonth(roomId, readingDate, electricReading, waterReading, month, year);
+            UtilityReading newReading = utilityService.saveReadingForMonth(utilityReading, month, year);
 
             // Lấy hóa đơn mới được tạo
             Invoice invoice = invoiceService.getInvoiceByUtilityReading(newReading);
@@ -272,5 +328,100 @@ public class AdminController {
             // Xử lý lỗi
             return "redirect:/admin/utility-readings?month=" + month + "&year=" + year + "&error=" + e.getMessage();
         }
+    }
+
+    @GetMapping("/invoices")
+    public String manageInvoices(HttpSession session, Model model) {
+        // Kiểm tra quyền admin
+        User user = (User) session.getAttribute("user");
+        if (user == null || !"ADMIN".equals(user.getRole())) {
+            return "redirect:/login";
+        }
+
+        // Lấy danh sách hóa đơn
+        List<Invoice> unpaidInvoices = invoiceService.getInvoicesByPaidStatus(false);
+        List<Invoice> paidInvoices = invoiceService.getInvoicesByPaidStatus(true);
+
+        model.addAttribute("unpaidInvoices", unpaidInvoices);
+        model.addAttribute("paidInvoices", paidInvoices);
+
+        return "admin/invoices/manage";
+    }
+
+    @GetMapping("/invoices/{id}")
+    public String viewInvoice(@PathVariable int id, HttpSession session, Model model) {
+        // Kiểm tra quyền admin
+        User user = (User) session.getAttribute("user");
+        if (user == null || !"ADMIN".equals(user.getRole())) {
+            return "redirect:/login";
+        }
+
+        Invoice invoice = invoiceService.getInvoiceById(id);
+        if (invoice == null) {
+            return "redirect:/admin/invoices?error=invoice_not_found";
+        }
+
+        model.addAttribute("invoice", invoice);
+        return "admin/invoices/detail";
+    }
+
+    @PostMapping("/invoices/{id}/mark-paid")
+    public String markInvoiceAsPaid(@PathVariable int id, HttpSession session) {
+        // Kiểm tra quyền admin
+        User user = (User) session.getAttribute("user");
+        if (user == null || !"ADMIN".equals(user.getRole())) {
+            return "redirect:/login";
+        }
+
+        try {
+            Invoice invoice = invoiceService.getInvoiceById(id);
+            if (invoice != null) {
+                invoiceService.markInvoiceAsPaid(invoice);
+            }
+        } catch (Exception e) {
+            return "redirect:/admin/invoices?error=" + e.getMessage();
+        }
+
+        return "redirect:/admin/invoices";
+    }
+
+    @PostMapping("/invoices/{id}/mark-unpaid")
+    public String markInvoiceAsUnpaid(@PathVariable int id, HttpSession session) {
+        // Kiểm tra quyền admin
+        User user = (User) session.getAttribute("user");
+        if (user == null || !"ADMIN".equals(user.getRole())) {
+            return "redirect:/login";
+        }
+
+        try {
+            Invoice invoice = invoiceService.getInvoiceById(id);
+            if (invoice != null) {
+                invoiceService.markInvoiceAsUnpaid(invoice);
+            }
+        } catch (Exception e) {
+            return "redirect:/admin/invoices?error=" + e.getMessage();
+        }
+
+        return "redirect:/admin/invoices";
+    }
+
+    @GetMapping("/reports")
+    public String showReports(HttpSession session, Model model) {
+        // Kiểm tra quyền admin
+        User user = (User) session.getAttribute("user");
+        if (user == null || !"ADMIN".equals(user.getRole())) {
+            return "redirect:/login";
+        }
+
+        // Tính toán các thống kê cơ bản
+        double totalRevenue = invoiceService.calculateTotalRevenue();
+        long unpaidInvoices = invoiceService.countUnpaidInvoices();
+        double unpaidAmount = invoiceService.calculateTotalUnpaidAmount();
+
+        model.addAttribute("totalRevenue", totalRevenue);
+        model.addAttribute("unpaidInvoices", unpaidInvoices);
+        model.addAttribute("unpaidAmount", unpaidAmount);
+
+        return "admin/reports";
     }
 }
