@@ -389,6 +389,29 @@
             background-color: #27ae60;
         }
 
+        /* Reading Warning Styles */
+        .reading-warning {
+            margin-top: 5px;
+            padding: 8px 12px;
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 4px;
+            color: #856404;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+        }
+
+        .reading-warning i {
+            margin-right: 8px;
+            color: #ff9800;
+        }
+
+        .form-control.error {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
+
         @media (max-width: 768px) {
             .header {
                 flex-direction: column;
@@ -546,15 +569,23 @@
 
                     <div class="form-group">
                         <label class="form-label">Chỉ Số Điện Mới</label>
-                        <input type="number" class="form-control" name="electricReading" required min="0" step="0.01" placeholder="Nhập chỉ số điện mới">
+                        <input type="number" class="form-control" name="electricReading" id="electricReading" required min="0" step="0.01" placeholder="Nhập chỉ số điện mới" oninput="validateReadings()">
+                        <div id="electricWarning" class="reading-warning" style="display: none;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>Chỉ số điện mới phải lớn hơn hoặc bằng chỉ số cũ</span>
+                        </div>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Chỉ Số Nước Mới</label>
-                        <input type="number" class="form-control" name="waterReading" required min="0" step="0.01" placeholder="Nhập chỉ số nước mới">
+                        <input type="number" class="form-control" name="waterReading" id="waterReading" required min="0" step="0.01" placeholder="Nhập chỉ số nước mới" oninput="validateReadings()">
+                        <div id="waterWarning" class="reading-warning" style="display: none;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>Chỉ số nước mới phải lớn hơn hoặc bằng chỉ số cũ</span>
+                        </div>
                     </div>
 
-                    <button type="submit" class="submit-btn">Lên hóa đơn</button>
+                    <button type="submit" class="submit-btn" id="submitReadingBtn">Lên hóa đơn</button>
                 </form>
             </div>
 
@@ -601,16 +632,24 @@
 
                             <div class="form-group">
                                 <label class="form-label">Chỉ Số Điện Hiện Tại</label>
-                                <input type="number" class="form-control" name="electricReading" id="edit-electric-reading" required min="0" step="0.01" placeholder="Chỉ số điện hiện tại">
+                                <input type="number" class="form-control" name="electricReading" id="edit-electric-reading" required min="0" step="0.01" placeholder="Chỉ số điện hiện tại" oninput="validateEditReadings()">
+                                <div id="editElectricWarning" class="reading-warning" style="display: none;">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <span>Chỉ số điện mới phải lớn hơn hoặc bằng chỉ số cũ</span>
+                                </div>
                             </div>
 
                             <div class="form-group">
                                 <label class="form-label">Chỉ Số Nước Hiện Tại</label>
-                                <input type="number" class="form-control" name="waterReading" id="edit-water-reading" required min="0" step="0.01" placeholder="Chỉ số nước hiện tại">
+                                <input type="number" class="form-control" name="waterReading" id="edit-water-reading" required min="0" step="0.01" placeholder="Chỉ số nước hiện tại" oninput="validateEditReadings()">
+                                <div id="editWaterWarning" class="reading-warning" style="display: none;">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <span>Chỉ số nước mới phải lớn hơn hoặc bằng chỉ số cũ</span>
+                                </div>
                             </div>
 
                             <div style="display: flex; gap: 10px;">
-                                <button type="submit" class="submit-btn" style="flex: 1; background-color: #f39c12;">
+                                <button type="submit" class="submit-btn" id="updateReadingBtn" style="flex: 1; background-color: #f39c12;">
                                     <i class="fas fa-edit"></i> Cập nhật chỉ số
                                 </button>
                                 <button type="button" class="submit-btn" onclick="cancelEdit()" style="flex: 1; background-color: #95a5a6;">
@@ -649,6 +688,10 @@
     let originalMonth = /*[[${selectedMonth}]]*/ 5;
     let originalYear = /*[[${selectedYear}]]*/ 2025;
     let pendingSubmission = false;
+    let previousElectricReading = 0;
+    let previousWaterReading = 0;
+    let editPreviousElectricReading = 0;
+    let editPreviousWaterReading = 0;
     /*]]>*/
 
     // Switch between tabs
@@ -660,6 +703,88 @@
         // Add active class to clicked button and corresponding content
         event.currentTarget.classList.add('active');
         document.getElementById(tabId).classList.add('active');
+    }
+
+    // Validate readings for new entry
+    function validateReadings() {
+        const electricInput = document.getElementById('electricReading');
+        const waterInput = document.getElementById('waterReading');
+        const electricWarning = document.getElementById('electricWarning');
+        const waterWarning = document.getElementById('waterWarning');
+        const submitBtn = document.getElementById('submitReadingBtn');
+
+        let isValid = true;
+
+        // Validate electric reading
+        if (electricInput.value && parseFloat(electricInput.value) < previousElectricReading) {
+            electricWarning.style.display = 'flex';
+            electricInput.classList.add('error');
+            isValid = false;
+        } else {
+            electricWarning.style.display = 'none';
+            electricInput.classList.remove('error');
+        }
+
+        // Validate water reading
+        if (waterInput.value && parseFloat(waterInput.value) < previousWaterReading) {
+            waterWarning.style.display = 'flex';
+            waterInput.classList.add('error');
+            isValid = false;
+        } else {
+            waterWarning.style.display = 'none';
+            waterInput.classList.remove('error');
+        }
+
+        // Enable/disable submit button
+        submitBtn.disabled = !isValid;
+        if (!isValid) {
+            submitBtn.style.backgroundColor = '#ccc';
+            submitBtn.style.cursor = 'not-allowed';
+        } else {
+            submitBtn.style.backgroundColor = '#27a0dd';
+            submitBtn.style.cursor = 'pointer';
+        }
+    }
+
+    // Validate readings for edit
+    function validateEditReadings() {
+        const electricInput = document.getElementById('edit-electric-reading');
+        const waterInput = document.getElementById('edit-water-reading');
+        const electricWarning = document.getElementById('editElectricWarning');
+        const waterWarning = document.getElementById('editWaterWarning');
+        const updateBtn = document.getElementById('updateReadingBtn');
+
+        let isValid = true;
+
+        // Validate electric reading
+        if (electricInput.value && parseFloat(electricInput.value) < editPreviousElectricReading) {
+            electricWarning.style.display = 'flex';
+            electricInput.classList.add('error');
+            isValid = false;
+        } else {
+            electricWarning.style.display = 'none';
+            electricInput.classList.remove('error');
+        }
+
+        // Validate water reading
+        if (waterInput.value && parseFloat(waterInput.value) < editPreviousWaterReading) {
+            waterWarning.style.display = 'flex';
+            waterInput.classList.add('error');
+            isValid = false;
+        } else {
+            waterWarning.style.display = 'none';
+            waterInput.classList.remove('error');
+        }
+
+        // Enable/disable update button
+        updateBtn.disabled = !isValid;
+        if (!isValid) {
+            updateBtn.style.backgroundColor = '#ccc';
+            updateBtn.style.cursor = 'not-allowed';
+        } else {
+            updateBtn.style.backgroundColor = '#f39c12';
+            updateBtn.style.cursor = 'pointer';
+        }
     }
 
     // Kiểm tra khi chọn tháng
@@ -777,15 +902,32 @@
                         console.error('Error:', data.error);
                         document.getElementById('prev-electric').textContent = '0 kWh';
                         document.getElementById('prev-water').textContent = '0 m³';
+                        previousElectricReading = 0;
+                        previousWaterReading = 0;
                     } else {
                         document.getElementById('prev-electric').textContent = data.electric + ' kWh';
                         document.getElementById('prev-water').textContent = data.water + ' m³';
+                        previousElectricReading = data.electric;
+                        previousWaterReading = data.water;
                     }
+
+                    // Reset validation when room changes
+                    document.getElementById('electricReading').value = '';
+                    document.getElementById('waterReading').value = '';
+                    document.getElementById('electricWarning').style.display = 'none';
+                    document.getElementById('waterWarning').style.display = 'none';
+                    document.getElementById('electricReading').classList.remove('error');
+                    document.getElementById('waterReading').classList.remove('error');
+                    document.getElementById('submitReadingBtn').disabled = false;
+                    document.getElementById('submitReadingBtn').style.backgroundColor = '#27a0dd';
+                    document.getElementById('submitReadingBtn').style.cursor = 'pointer';
                 })
                 .catch(error => {
                     console.error('Error fetching previous readings:', error);
                     document.getElementById('prev-electric').textContent = '0 kWh';
                     document.getElementById('prev-water').textContent = '0 m³';
+                    previousElectricReading = 0;
+                    previousWaterReading = 0;
                 });
         }
     });
@@ -815,14 +957,30 @@
                         document.getElementById('edit-prev-electric').textContent = data.previousElectric + ' kWh';
                         document.getElementById('edit-prev-water').textContent = data.previousWater + ' m³';
 
+                        // Store previous readings for validation
+                        editPreviousElectricReading = data.previousElectric;
+                        editPreviousWaterReading = data.previousWater;
+
                         // Show reading date
                         const readingDate = new Date(data.readingDate);
                         document.getElementById('readingDate').textContent = 'Ngày nhập: ' +
                             readingDate.toLocaleDateString('vi-VN') + ' ' +
                             readingDate.toLocaleTimeString('vi-VN');
 
+                        // Reset validation warnings
+                        document.getElementById('editElectricWarning').style.display = 'none';
+                        document.getElementById('editWaterWarning').style.display = 'none';
+                        document.getElementById('edit-electric-reading').classList.remove('error');
+                        document.getElementById('edit-water-reading').classList.remove('error');
+                        document.getElementById('updateReadingBtn').disabled = false;
+                        document.getElementById('updateReadingBtn').style.backgroundColor = '#f39c12';
+                        document.getElementById('updateReadingBtn').style.cursor = 'pointer';
+
                         // Show edit section
                         document.getElementById('editReadingSection').style.display = 'block';
+
+                        // Validate current readings
+                        validateEditReadings();
                     }
                 })
                 .catch(error => {
