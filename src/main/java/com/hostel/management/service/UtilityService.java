@@ -69,14 +69,33 @@ public class UtilityService {
 
         // Tạo ngày đầu tháng được chỉ định
         Calendar cal = Calendar.getInstance();
-        cal.set(year, month - 1, 1, 0, 0, 0); // month - 1 vì Calendar.MONTH bắt đầu từ 0
+        cal.set(year, month - 1, 1, 0, 0, 0);
         cal.set(Calendar.MILLISECOND, 0);
         Date startOfMonth = cal.getTime();
+
+        System.out.println("=== DEBUG getLastReadingBeforeMonth ===");
+        System.out.println("Room ID: " + room.getId());
+        System.out.println("Target month/year: " + month + "/" + year);
+        System.out.println("Start of month: " + startOfMonth);
 
         // Lấy tất cả chỉ số trước ngày đầu tháng này, sắp xếp theo ngày giảm dần
         List<UtilityReading> readings = utilityReadingRepository.findByRoomAndReadingDateBefore(room, startOfMonth);
 
-        return readings.isEmpty() ? null : readings.get(0);
+        System.out.println("Found " + readings.size() + " readings before " + startOfMonth);
+
+        // Debug: In ra các chỉ số tìm được
+        for (int i = 0; i < Math.min(3, readings.size()); i++) {
+            UtilityReading reading = readings.get(i);
+            System.out.println("Reading " + (i+1) + ": Date=" + reading.getReadingDate() +
+                    ", Electric=" + reading.getElectricReading() +
+                    ", Water=" + reading.getWaterReading());
+        }
+
+        UtilityReading result = readings.isEmpty() ? null : readings.get(0);
+        System.out.println("Selected reading: " + (result != null ? result.getReadingDate() : "null"));
+        System.out.println("=== END DEBUG ===");
+
+        return result;
     }
 
     /**
@@ -106,7 +125,20 @@ public class UtilityService {
         endCal.set(Calendar.MILLISECOND, 999);
         Date endOfMonth = endCal.getTime();
 
+        System.out.println("=== DEBUG hasReadingInMonth ===");
+        System.out.println("Room ID: " + room.getId());
+        System.out.println("Check month/year: " + month + "/" + year);
+        System.out.println("Start of month: " + startOfMonth);
+        System.out.println("End of month: " + endOfMonth);
+
         List<UtilityReading> readings = utilityReadingRepository.findByRoomAndReadingDateBetween(room, startOfMonth, endOfMonth);
+
+        System.out.println("Found " + readings.size() + " readings in month " + month + "/" + year);
+        for (UtilityReading reading : readings) {
+            System.out.println("- Reading date: " + reading.getReadingDate() + ", Electric: " + reading.getElectricReading());
+        }
+        System.out.println("=== END DEBUG hasReadingInMonth ===");
+
         return !readings.isEmpty();
     }
 
@@ -198,6 +230,10 @@ public class UtilityService {
      */
     @Transactional
     public UtilityReading saveReadingForMonth(UtilityReading utilityReading, int month, int year) {
+        System.out.println("=== START saveReadingForMonth ===");
+        System.out.println("Target month/year: " + month + "/" + year);
+        System.out.println("Original reading date: " + utilityReading.getReadingDate());
+
         validateUtilityReading(utilityReading);
 
         if (month < 1 || month > 12) {
@@ -217,6 +253,18 @@ public class UtilityService {
         }
         utilityReading.setRoom(existingRoom);
 
+        // QUAN TRỌNG: Thiết lập ngày đọc TRƯỚC KHI kiểm tra hasReadingInMonth
+        Calendar readingCal = Calendar.getInstance();
+        readingCal.set(year, month - 1, 15); // Giữa tháng để tránh biên
+        readingCal.set(Calendar.HOUR_OF_DAY, 12);
+        readingCal.set(Calendar.MINUTE, 0);
+        readingCal.set(Calendar.SECOND, 0);
+        readingCal.set(Calendar.MILLISECOND, 0);
+
+        utilityReading.setReadingDate(readingCal.getTime());
+
+        System.out.println("Set reading date to: " + utilityReading.getReadingDate());
+
         // Kiểm tra xem đã có chỉ số trong tháng này chưa
         if (hasReadingInMonth(existingRoom, month, year)) {
             throw new RuntimeException("Phòng này đã có chỉ số trong tháng " + month + "/" + year);
@@ -226,6 +274,8 @@ public class UtilityService {
         UtilityReading lastReading = getLastReadingBeforeMonth(existingRoom, month, year);
         double previousElectric = lastReading != null ? lastReading.getElectricReading() : 0;
         double previousWater = lastReading != null ? lastReading.getWaterReading() : 0;
+
+        System.out.println("Previous electric: " + previousElectric + ", Previous water: " + previousWater);
 
         // Validate chỉ số mới phải >= chỉ số cũ
         if (utilityReading.getElectricReading() < previousElectric) {
@@ -252,13 +302,12 @@ public class UtilityService {
         utilityReading.setWaterTotal(waterTotal);
         utilityReading.setBilled(false);
 
-        // Thiết lập ngày đọc nếu chưa có
-        if (utilityReading.getReadingDate() == null) {
-            utilityReading.setReadingDate(new Date());
-        }
+        System.out.println("Final reading date before save: " + utilityReading.getReadingDate());
 
         // Lưu chỉ số mới
         UtilityReading savedReading = utilityReadingRepository.save(utilityReading);
+
+        System.out.println("Saved reading date: " + savedReading.getReadingDate());
 
         // Tạo hóa đơn từ chỉ số mới với thông tin tháng/năm
         Invoice invoice = invoiceService.createInvoiceFromUtilityReadingForMonth(savedReading, previousElectric, previousWater, month, year);
@@ -266,6 +315,8 @@ public class UtilityService {
         // Đánh dấu là đã lên hóa đơn
         savedReading.setBilled(true);
         utilityReadingRepository.save(savedReading);
+
+        System.out.println("=== END saveReadingForMonth ===");
 
         return savedReading;
     }
@@ -442,8 +493,24 @@ public class UtilityService {
             throw new IllegalArgumentException("Chỉ số nước không thể âm");
         }
 
-        if (utilityReading.getReadingDate() != null && utilityReading.getReadingDate().after(new Date())) {
-            throw new IllegalArgumentException("Ngày đọc chỉ số không thể trong tương lai");
+        // COMMENT OUT hoặc sửa lại validation ngày để không kiểm tra tương lai
+        // Vì chúng ta có thể cần nhập chỉ số cho tháng trong tương lai
+    /*
+    if (utilityReading.getReadingDate() != null && utilityReading.getReadingDate().after(new Date())) {
+        throw new IllegalArgumentException("Ngày đọc chỉ số không thể trong tương lai");
+    }
+    */
+
+        // Thay thế bằng validation hợp lý hơn:
+        if (utilityReading.getReadingDate() != null) {
+            Calendar now = Calendar.getInstance();
+            Calendar readingCal = Calendar.getInstance();
+            readingCal.setTime(utilityReading.getReadingDate());
+
+            // Cho phép nhập chỉ số trong năm hiện tại và năm kế tiếp
+            if (readingCal.get(Calendar.YEAR) > now.get(Calendar.YEAR) + 1) {
+                throw new IllegalArgumentException("Ngày đọc chỉ số không thể quá xa trong tương lai");
+            }
         }
     }
 
