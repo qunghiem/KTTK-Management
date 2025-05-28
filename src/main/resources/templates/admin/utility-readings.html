@@ -173,8 +173,13 @@
             white-space: nowrap;
         }
 
-        .update-btn:hover {
+        .update-btn:hover:not(:disabled) {
             background-color: #1b8bbd;
+        }
+
+        .update-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
         }
 
         /* Tabs Style */
@@ -454,9 +459,9 @@
         <!-- Chọn tháng/năm -->
         <div class="month-selector">
             <div class="month-selector-title">Chọn tháng cần nhập chỉ số</div>
-            <form th:action="@{/admin/utility-readings}" method="get">
+            <form th:action="@{/admin/utility-readings}" method="get" id="monthSelectionForm">
                 <div class="month-year-inputs">
-                    <select name="month" th:value="${selectedMonth}">
+                    <select name="month" th:value="${selectedMonth}" id="monthSelect" onchange="checkMonthSelection()">
                         <option value="1" th:selected="${selectedMonth == 1}">Tháng 1</option>
                         <option value="2" th:selected="${selectedMonth == 2}">Tháng 2</option>
                         <option value="3" th:selected="${selectedMonth == 3}">Tháng 3</option>
@@ -470,15 +475,24 @@
                         <option value="11" th:selected="${selectedMonth == 11}">Tháng 11</option>
                         <option value="12" th:selected="${selectedMonth == 12}">Tháng 12</option>
                     </select>
-                    <select name="year" th:value="${selectedYear}">
+                    <select name="year" th:value="${selectedYear}" id="yearSelect" onchange="checkMonthSelection()">
                         <option value="2023" th:selected="${selectedYear == 2023}">2023</option>
                         <option value="2024" th:selected="${selectedYear == 2024}">2024</option>
                         <option value="2025" th:selected="${selectedYear == 2025}">2025</option>
                         <option value="2026" th:selected="${selectedYear == 2026}">2026</option>
                     </select>
-                    <button type="submit" class="update-btn">Cập nhật</button>
+                    <button type="submit" class="update-btn" id="updateBtn">Cập nhật</button>
                 </div>
             </form>
+
+            <!-- Thông báo cảnh báo -->
+            <div id="monthWarning" style="display: none; margin-top: 15px; padding: 12px; border-radius: 6px; font-size: 14px;">
+                <div id="warningContent"></div>
+                <div style="margin-top: 10px;">
+                    <button onclick="proceedAnyway()" style="padding: 6px 12px; background-color: #f39c12; color: white; border: none; border-radius: 4px; margin-right: 10px; cursor: pointer;">Tiếp tục</button>
+                    <button onclick="cancelSelection()" style="padding: 6px 12px; background-color: #95a5a6; color: white; border: none; border-radius: 4px; cursor: pointer;">Hủy</button>
+                </div>
+            </div>
         </div>
 
         <!-- Tabs Container -->
@@ -630,7 +644,13 @@
     </div>
 </div>
 
-<script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    let originalMonth = /*[[${selectedMonth}]]*/ 5;
+    let originalYear = /*[[${selectedYear}]]*/ 2025;
+    let pendingSubmission = false;
+    /*]]>*/
+
     // Switch between tabs
     function switchTab(event, tabId) {
         // Remove active class from all tab buttons and contents
@@ -640,6 +660,107 @@
         // Add active class to clicked button and corresponding content
         event.currentTarget.classList.add('active');
         document.getElementById(tabId).classList.add('active');
+    }
+
+    // Kiểm tra khi chọn tháng
+    function checkMonthSelection() {
+        const selectedMonth = parseInt(document.getElementById('monthSelect').value);
+        const selectedYear = parseInt(document.getElementById('yearSelect').value);
+        const currentDate = new Date();
+        const currentMonth = currentDate.getMonth() + 1; // JavaScript months are 0-indexed
+        const currentYear = currentDate.getFullYear();
+
+        const warningDiv = document.getElementById('monthWarning');
+        const warningContent = document.getElementById('warningContent');
+        const updateBtn = document.getElementById('updateBtn');
+
+        // Reset warning
+        warningDiv.style.display = 'none';
+        updateBtn.disabled = false;
+        pendingSubmission = false;
+
+        // Nếu chọn năm tương lai
+        if (selectedYear > currentYear) {
+            showFutureWarning(selectedMonth, selectedYear);
+            return;
+        }
+
+        // Nếu chọn năm quá khứ
+        if (selectedYear < currentYear) {
+            showPastWarning(selectedMonth);
+            return;
+        }
+
+        // Cùng năm hiện tại
+        if (selectedYear === currentYear) {
+            if (selectedMonth > currentMonth) {
+                // Tháng tương lai
+                showFutureWarning(selectedMonth, selectedYear);
+            } else if (selectedMonth < currentMonth) {
+                // Tháng quá khứ
+                showPastWarning(selectedMonth);
+            }
+            // Nếu là tháng hiện tại thì không cần cảnh báo
+        }
+    }
+
+    function showFutureWarning(month, year) {
+        const warningDiv = document.getElementById('monthWarning');
+        const warningContent = document.getElementById('warningContent');
+        const updateBtn = document.getElementById('updateBtn');
+
+        warningDiv.style.display = 'block';
+        warningDiv.style.backgroundColor = '#fff8e1';
+        warningDiv.style.border = '1px solid #ffc107';
+        warningDiv.style.color = '#5d4037';
+
+        warningContent.innerHTML = `
+            <i class="fas fa-exclamation-triangle" style="color: #ff9800; margin-right: 8px;"></i>
+            <strong>Cảnh báo:</strong> Chưa tới tháng ${month}/${year}, bạn có muốn tiếp tục?
+        `;
+
+        updateBtn.disabled = true;
+        pendingSubmission = true;
+    }
+
+    function showPastWarning(selectedMonth) {
+        const warningDiv = document.getElementById('monthWarning');
+        const warningContent = document.getElementById('warningContent');
+        const updateBtn = document.getElementById('updateBtn');
+        const currentDate = new Date();
+        const currentMonth = currentDate.getMonth() + 1;
+
+        // Tạo danh sách các tháng từ tháng được chọn đến tháng hiện tại
+        let monthsList = [];
+        for (let i = selectedMonth; i <= currentMonth; i++) {
+            monthsList.push(i);
+        }
+
+        warningDiv.style.display = 'block';
+        warningDiv.style.backgroundColor = '#ffebee';
+        warningDiv.style.border = '1px solid #f44336';
+        warningDiv.style.color = '#c62828';
+
+        warningContent.innerHTML = `
+            <i class="fas fa-info-circle" style="color: #f44336; margin-right: 8px;"></i>
+            <strong>Lưu ý:</strong> Để tiếp tục, bạn cần nhập lại chỉ số cho các tháng: ${monthsList.join(', ')}
+        `;
+
+        updateBtn.disabled = true;
+        pendingSubmission = true;
+    }
+
+    function proceedAnyway() {
+        document.getElementById('monthSelectionForm').submit();
+    }
+
+    function cancelSelection() {
+        // Reset về tháng và năm ban đầu
+        document.getElementById('monthSelect').value = originalMonth;
+        document.getElementById('yearSelect').value = originalYear;
+        document.getElementById('monthWarning').style.display = 'none';
+        document.getElementById('updateBtn').disabled = false;
+        pendingSubmission = false;
     }
 
     // Update previous readings when room selection changes (for unentered rooms)
